@@ -11,4 +11,5 @@ vim.opt.number = true
 -- 相対行表示
 vim.opt.relativenumber = true
 
+-- lazy.nvim
 require("config.lazy")
