@@ -1,7 +1,5 @@
 # dotfiles
 
-Git と GNU Stow で管理する個人用 dotfiles。
-
 ## Setup
 
 ### 初回セットアップ
@@ -13,45 +11,41 @@ git clone <repository-url> ~/dotfiles
 cd ~/dotfiles
 ```
 
-Stow をインストールする:
-
-```sh
-brew install stow
-```
-
 設定ファイルの symlink を作成する:
 
 ```sh
-stow nvim wezterm
+mkdir -p ~/.config
+ln -s ~/dotfiles/.config/nvim ~/.config/nvim
+ln -s ~/dotfiles/.config/wezterm ~/.config/wezterm
 ```
 
 これで以下のようにリンクされる:
 
 ```text
-~/.config/nvim    -> ~/dotfiles/nvim/.config/nvim
-~/.config/wezterm -> ~/dotfiles/wezterm/.config/wezterm
+~/.config/nvim    -> ~/dotfiles/.config/nvim
+~/.config/wezterm -> ~/dotfiles/.config/wezterm
 ```
 
 ## Structure
 
-トップレベルの各ディレクトリが Stow package になっている。
+ホームディレクトリ配下の構成に合わせて配置する。
 
 ```text
 dotfiles/
-├── nvim/.config/nvim/
-└── wezterm/.config/wezterm/
+└── .config/
+    ├── nvim/
+    └── wezterm/
 ```
 
 ## Commands
 
 ```sh
 # symlink を作成
-stow nvim wezterm
+mkdir -p ~/.config
+ln -s ~/dotfiles/.config/nvim ~/.config/nvim
+ln -s ~/dotfiles/.config/wezterm ~/.config/wezterm
 
 # symlink を削除
-stow -D nvim
-stow -D wezterm
-
-# symlink を作り直す
-stow -R nvim wezterm
+unlink ~/.config/nvim
+unlink ~/.config/wezterm
 ```
