@@ -32,6 +32,29 @@ require("lazy").setup({
     {
       "neovim/nvim-lspconfig",
       config = function()
+        -- LSPが有効になったバッファだけに、LSP用のキーマップを設定する。
+        vim.api.nvim_create_autocmd("LspAttach", {
+          group = vim.api.nvim_create_augroup("UserLspKeymaps", { clear = true }),
+          callback = function(event)
+            -- `buffer = event.buf` を指定して、PHP以外の通常バッファへ影響を広げない。
+            local function map(lhs, rhs, desc)
+              vim.keymap.set("n", lhs, rhs, { buffer = event.buf, desc = desc })
+            end
+
+            -- よく使うLSP操作をNeovim標準のLua APIに割り当てる。
+            map("gd", vim.lsp.buf.definition, "LSP: 定義へジャンプ")
+            map("gi", vim.lsp.buf.implementation, "LSP: 実装へジャンプ")
+            map("gr", vim.lsp.buf.references, "LSP: 参照を表示")
+            map("gy", vim.lsp.buf.type_definition, "LSP: 型定義へジャンプ")
+            map("K", vim.lsp.buf.hover, "LSP: ホバー情報を表示")
+            map("<leader>rn", vim.lsp.buf.rename, "LSP: 名前変更")
+            map("<leader>ca", vim.lsp.buf.code_action, "LSP: コードアクション")
+            map("<leader>e", vim.diagnostic.open_float, "LSP: 現在行の診断を表示")
+            map("[d", vim.diagnostic.goto_prev, "LSP: 前の診断へ移動")
+            map("]d", vim.diagnostic.goto_next, "LSP: 次の診断へ移動")
+          end,
+        })
+
         vim.lsp.config("phpactor", {
           cmd = { "phpactor", "language-server" },
           filetypes = { "php" },
