@@ -30,6 +30,23 @@ vim.g.maplocalleader = "\\"
 require("lazy").setup({
   spec = {
     {
+      "neovim/nvim-lspconfig",
+      config = function()
+        vim.lsp.config("phpactor", {
+          cmd = { "phpactor", "language-server" },
+          filetypes = { "php" },
+          root_markers = { ".git", "composer.json", ".phpactor.json", ".phpactor.yml" },
+          workspace_required = true,
+          init_options = {
+            ["language_server_phpstan.enabled"] = false,
+            ["language_server_psalm.enabled"] = false,
+          },
+        })
+
+        vim.lsp.enable("phpactor")
+      end,
+    },
+    {
       "lewis6991/gitsigns.nvim",
       event = { "BufReadPre", "BufNewFile" },
       opts = {
