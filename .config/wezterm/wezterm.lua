@@ -30,4 +30,7 @@ config.use_fancy_tab_bar = false
 -- config.color_scheme = 'Cyberdyne'
 config.color_scheme = 'Eldritch'
 
+-- マルチディスプレイで別モニターをフォーカス時にノッチ回避機能の裏まで表示
+config.macos_fullscreen_extend_behind_notch = true
+
 return config
