@@ -26,11 +26,21 @@ config.hide_tab_bar_if_only_one_tab = true
 config.use_fancy_tab_bar = false
 
 -- カラースキーマを取得
--- config.color_scheme = 'AdventureTime'
-config.color_scheme = 'cyberpunk'
+config.color_scheme = 'AdventureTime'
+-- config.color_scheme = 'cyberpunk'
 -- config.color_scheme = 'Eldritch'
 
 -- マルチディスプレイで別モニターをフォーカス時にノッチ回避機能の裏まで表示
 config.macos_fullscreen_extend_behind_notch = true
+
+-- バックスラッシュを入力可能に設定
+config.keys = {
+    -- backslash
+    {
+        key = "raw:93",
+        mods = "ALT",
+        action = wezterm.action.SendString("\\"),
+    },
+}
 
 return config
