@@ -33,13 +33,45 @@ config.color_scheme = 'AdventureTime'
 -- マルチディスプレイで別モニターをフォーカス時にノッチ回避機能の裏まで表示
 config.macos_fullscreen_extend_behind_notch = true
 
--- バックスラッシュを入力可能に設定
+-- キーバインディング
 config.keys = {
     -- backslash
     {
         key = "raw:93",
         mods = "ALT",
         action = wezterm.action.SendString("\\"),
+    },
+    -- move by word
+    {
+        key = "LeftArrow",
+        mods = "OPT",
+        action = wezterm.action.SendKey { key = "b", mods = "ALT" },
+    },
+    {
+        key = "RightArrow",
+        mods = "OPT",
+        action = wezterm.action.SendKey { key = "f", mods = "ALT" },
+    },
+    -- resize panes
+    {
+        key = "LeftArrow",
+        mods = "CTRL|SHIFT|ALT",
+        action = wezterm.action.AdjustPaneSize { "Left", 10 },
+    },
+    {
+        key = "RightArrow",
+        mods = "CTRL|SHIFT|ALT",
+        action = wezterm.action.AdjustPaneSize { "Right", 10 },
+    },
+    {
+        key = "UpArrow",
+        mods = "CTRL|SHIFT|ALT",
+        action = wezterm.action.AdjustPaneSize { "Up", 5 },
+    },
+    {
+        key = "DownArrow",
+        mods = "CTRL|SHIFT|ALT",
+        action = wezterm.action.AdjustPaneSize { "Down", 5 },
     },
 }
 
