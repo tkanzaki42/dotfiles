@@ -35,13 +35,13 @@ config.macos_fullscreen_extend_behind_notch = true
 
 -- キーバインディング
 config.keys = {
-    -- backslash
+    -- バックスラッシュ入力
     {
         key = "raw:93",
         mods = "ALT",
         action = wezterm.action.SendString("\\"),
     },
-    -- move by word
+    -- 単語単位で移動
     {
         key = "LeftArrow",
         mods = "OPT",
@@ -52,7 +52,7 @@ config.keys = {
         mods = "OPT",
         action = wezterm.action.SendKey { key = "f", mods = "ALT" },
     },
-    -- resize panes
+    -- ペインリサイズ
     {
         key = "LeftArrow",
         mods = "CTRL|SHIFT|ALT",
