@@ -83,6 +83,15 @@ require("lazy").setup({
         current_line_blame_formatter = "<author>, <author_time:%R> - <summary>",
       },
     },
+    {
+      "iamcco/markdown-preview.nvim",
+      cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+      ft = { "markdown" },
+      build = function()
+        require("lazy").load({ plugins = { "markdown-preview.nvim" } })
+        vim.fn["mkdp#util#install_sync"](1)
+      end,
+    },
   },
   install = { colorscheme = { "habamax" } },
   checker = { enabled = true },
