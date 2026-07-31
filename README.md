@@ -43,6 +43,7 @@ nvim
 phpactor
 php 8.4
 composer
+sqruff
 ```
 
 `analog-clock` はターミナル上でアナログ時計を表示する。初回起動時に
@@ -65,6 +66,7 @@ analog-clock
 ```
 
 `phpactor` は Neovim のPHP LSPとして使う。Neovimプラグイン自体は引き続き `lazy.nvim` で管理する。
+`sqruff` は SQL formatter/linter として使い、Neovim の LSP から `sqruff lsp` を起動する。
 
 手動で入れた `~/.local/bin/phpactor` がある場合は、Home Manager適用後にPATHの優先順を確認する:
 

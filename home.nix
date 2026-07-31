@@ -20,6 +20,8 @@ in
     pkgs.php84Packages.composer
     # Neovimから使うPHP LSP本体。
     pkgs.phpactor
+    # SQL formatter/linter。NeovimのLSPから `sqruff lsp` として使う。
+    pkgs.sqruff
   ];
 
   # `home-manager` コマンド自体もHome Manager管理下に置く。

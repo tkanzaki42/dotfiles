@@ -36,7 +36,7 @@ require("lazy").setup({
         vim.api.nvim_create_autocmd("LspAttach", {
           group = vim.api.nvim_create_augroup("UserLspKeymaps", { clear = true }),
           callback = function(event)
-            -- `buffer = event.buf` を指定して、PHP以外の通常バッファへ影響を広げない。
+            -- `buffer = event.buf` を指定して、LSPが付いていない通常バッファへ影響を広げない。
             local function map(lhs, rhs, desc)
               vim.keymap.set("n", lhs, rhs, { buffer = event.buf, desc = desc })
             end
@@ -49,6 +49,9 @@ require("lazy").setup({
             map("K", vim.lsp.buf.hover, "LSP: ホバー情報を表示")
             map("<leader>rn", vim.lsp.buf.rename, "LSP: 名前変更")
             map("<leader>ca", vim.lsp.buf.code_action, "LSP: コードアクション")
+            map("<leader>f", function()
+              vim.lsp.buf.format({ bufnr = event.buf })
+            end, "LSP: フォーマット")
             map("<leader>e", vim.diagnostic.open_float, "LSP: 現在行の診断を表示")
             map("[d", vim.diagnostic.goto_prev, "LSP: 前の診断へ移動")
             map("]d", vim.diagnostic.goto_next, "LSP: 次の診断へ移動")
@@ -66,7 +69,15 @@ require("lazy").setup({
           },
         })
 
+        vim.lsp.config("sqruff", {
+          cmd = { "sqruff", "--dialect", "mysql", "lsp" },
+          filetypes = { "sql", "mysql" },
+          root_markers = { ".sqruff", ".git" },
+          workspace_required = false,
+        })
+
         vim.lsp.enable("phpactor")
+        vim.lsp.enable("sqruff")
       end,
     },
     {
