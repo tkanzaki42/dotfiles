@@ -19,10 +19,23 @@
       username = "t_kanzaki";
       homeDirectory = "/Users/${username}";
 
+      systems = [
+        "aarch64-darwin"
+        "x86_64-darwin"
+        "aarch64-linux"
+        "x86_64-linux"
+      ];
+
+      forAllSystems = nixpkgs.lib.genAttrs systems;
+
+      mkPkgs = system: import nixpkgs { inherit system; };
+
+      mkAnalogClock = pkgs: pkgs.callPackage ./packages/analog-clock.nix { };
+
       # systemごとのHome Manager設定を作る共通関数。
       mkHome = system:
         home-manager.lib.homeManagerConfiguration {
-          pkgs = import nixpkgs { inherit system; };
+          pkgs = mkPkgs system;
           modules = [
             ./home.nix
             {
@@ -35,6 +48,51 @@
         };
     in
     {
+      packages = forAllSystems (
+        system:
+        let
+          pkgs = mkPkgs system;
+          analogClock = mkAnalogClock pkgs;
+        in
+        {
+          analog-clock = analogClock;
+          default = analogClock;
+        }
+      );
+
+      apps = forAllSystems (
+        system:
+        let
+          pkgs = mkPkgs system;
+          analogClock = mkAnalogClock pkgs;
+        in
+        {
+          analog-clock = {
+            type = "app";
+            program = "${analogClock}/bin/analog-clock";
+          };
+          default = {
+            type = "app";
+            program = "${analogClock}/bin/analog-clock";
+          };
+        }
+      );
+
+      devShells = forAllSystems (
+        system:
+        let
+          pkgs = mkPkgs system;
+        in
+        {
+          default = pkgs.mkShell {
+            packages = [
+              (mkAnalogClock pkgs)
+              pkgs.nodejs_22
+            ];
+          };
+        }
+      );
+
       homeConfigurations = {
         # 現在のmacOS Apple Silicon向けの短い名前。
         "${username}" = mkHome "aarch64-darwin";
