@@ -36,6 +36,12 @@ config.macos_fullscreen_extend_behind_notch = true
 
 -- キーバインディング
 config.keys = {
+    -- CodexでShift+Enterを改行として送る
+    {
+        key = "Enter",
+        mods = "SHIFT",
+        action = wezterm.action.SendKey { key = "j", mods = "CTRL" },
+    },
     -- バックスラッシュ入力
     {
         key = "raw:93",
