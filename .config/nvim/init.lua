@@ -24,3 +24,9 @@ vim.keymap.set("i", "<A-Down>", "<Esc>:m .+1<CR>==gi", { desc = "Move line down"
 
 -- lazy.nvim
 require("config.lazy")
+
+vim.keymap.set("n", "<leader>yp", function()
+  local path = vim.fn.expand("%:p")
+  vim.fn.setreg("+", path)
+  vim.notify("Copied: " .. path)
+end, { desc = "Yank absolute file path" })
