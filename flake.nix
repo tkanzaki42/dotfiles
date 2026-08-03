@@ -31,6 +31,7 @@
       mkPkgs = system: import nixpkgs { inherit system; };
 
       mkAnalogClock = pkgs: pkgs.callPackage ./packages/analog-clock.nix { };
+      mkWeztermLayout = pkgs: pkgs.callPackage ./packages/weztermlayout.nix { };
 
       # systemごとのHome Manager設定を作る共通関数。
       mkHome = system:
@@ -53,9 +54,11 @@
         let
           pkgs = mkPkgs system;
           analogClock = mkAnalogClock pkgs;
+          weztermLayout = mkWeztermLayout pkgs;
         in
         {
           analog-clock = analogClock;
+          weztermlayout = weztermLayout;
           default = analogClock;
         }
       );
@@ -65,11 +68,16 @@
         let
           pkgs = mkPkgs system;
           analogClock = mkAnalogClock pkgs;
+          weztermLayout = mkWeztermLayout pkgs;
         in
         {
           analog-clock = {
             type = "app";
             program = "${analogClock}/bin/analog-clock";
+          };
+          weztermlayout = {
+            type = "app";
+            program = "${weztermLayout}/bin/weztermlayout";
           };
           default = {
             type = "app";
@@ -87,6 +95,7 @@
           default = pkgs.mkShell {
             packages = [
               (mkAnalogClock pkgs)
+              (mkWeztermLayout pkgs)
               pkgs.nodejs_22
             ];
           };

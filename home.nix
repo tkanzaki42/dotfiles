@@ -2,6 +2,7 @@
 
 let
   analogClock = pkgs.callPackage ./packages/analog-clock.nix { };
+  weztermLayout = pkgs.callPackage ./packages/weztermlayout.nix { };
 in
 {
   # Home Managerの互換性基準。初回導入時のリリースに合わせて固定する。
@@ -12,6 +13,8 @@ in
   home.packages = [
     # ターミナル上でアナログ時計を表示するラッパー。
     analogClock
+    # WezTermの作業用ペイン構成を一発で作るコマンド。
+    weztermLayout
     # エディタ本体。設定とプラグイン管理はdotfiles/lazy.nvim側に残す。
     pkgs.neovim
     # PHP実行環境。

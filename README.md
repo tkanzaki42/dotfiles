@@ -39,6 +39,7 @@ nix run github:nix-community/home-manager -- switch --flake .#t_kanzaki
 
 ```text
 analog-clock
+weztermlayout
 nvim
 phpactor
 php 8.4
@@ -55,6 +56,7 @@ Home Managerを適用せずに一度だけ実行する:
 ```sh
 cd ~/dotfiles
 nix run .#analog-clock
+nix run .#weztermlayout
 ```
 
 一時的に環境へ入ってから実行する:
@@ -63,7 +65,13 @@ nix run .#analog-clock
 cd ~/dotfiles
 nix develop
 analog-clock
+weztermlayout
 ```
+
+`weztermlayout` は WezTerm の中で実行する。現在のペインを中央の作業ペインとして残し、
+左に `codex`、右上に `analog-clock`、右下に通常ターミナルを作る。短い alias として
+`wezlayout` も使える。WezTerm本体と `codex` はPATH上にある前提で、WezTerm CLIの場所は
+`WEZTERM_BIN` で上書きできる。比率や起動コマンドは `WEZTERMLAYOUT_*` 環境変数で上書きできる。
 
 `phpactor` は Neovim のPHP LSPとして使う。Neovimプラグイン自体は引き続き `lazy.nvim` で管理する。
 `sqruff` は SQL formatter/linter として使い、Neovim の LSP から `sqruff lsp` を起動する。
@@ -84,7 +92,8 @@ dotfiles/
 ├── flake.nix
 ├── home.nix
 ├── packages/
-│   └── analog-clock.nix
+│   ├── analog-clock.nix
+│   └── weztermlayout.nix
 └── .config/
     ├── nvim/
     └── wezterm/
