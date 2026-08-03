@@ -17,6 +17,10 @@ in
     weztermLayout
     # エディタ本体。設定とプラグイン管理はdotfiles/lazy.nvim側に残す。
     pkgs.neovim
+    # fzf-luaが使うファジーファインダー本体。
+    pkgs.fzf
+    # fzf-luaのlive_grepで使う高速grep。
+    pkgs.ripgrep
     # PHP実行環境。
     pkgs.php84
     # PHPプロジェクトの依存管理。

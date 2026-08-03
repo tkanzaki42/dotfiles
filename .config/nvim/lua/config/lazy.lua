@@ -106,6 +106,41 @@ require("lazy").setup({
       },
     },
     {
+      "ibhagwan/fzf-lua",
+      cmd = "FzfLua",
+      keys = {
+        {
+          "<leader>pf",
+          function()
+            require("fzf-lua").files()
+          end,
+          desc = "FzfLua: ファイル検索",
+        },
+        {
+          "<leader>pg",
+          function()
+            require("fzf-lua").live_grep()
+          end,
+          desc = "FzfLua: grep検索",
+        },
+        {
+          "<leader>pb",
+          function()
+            require("fzf-lua").buffers()
+          end,
+          desc = "FzfLua: バッファ検索",
+        },
+        {
+          "<leader>ph",
+          function()
+            require("fzf-lua").help_tags()
+          end,
+          desc = "FzfLua: ヘルプ検索",
+        },
+      },
+      opts = {},
+    },
+    {
       "iamcco/markdown-preview.nvim",
       cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
       ft = { "markdown" },
