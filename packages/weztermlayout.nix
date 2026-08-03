@@ -49,10 +49,10 @@ let
       cwd=''${WEZTERMLAYOUT_CWD:-''${WEZLAYOUT_CWD:-$PWD}}
 
       # Ratios taken from the reference layout:
-      # left/middle/right = 45/147/78 cols, right top/bottom = 27/38 rows.
-      left_percent=''${WEZTERMLAYOUT_LEFT_PERCENT:-''${WEZLAYOUT_LEFT_PERCENT:-17}}
-      right_percent=''${WEZTERMLAYOUT_RIGHT_PERCENT:-''${WEZLAYOUT_RIGHT_PERCENT:-35}}
-      right_bottom_percent=''${WEZTERMLAYOUT_RIGHT_BOTTOM_PERCENT:-''${WEZLAYOUT_RIGHT_BOTTOM_PERCENT:-58}}
+      # left/middle/right = 67/146/57 cols, right top/bottom = 17/48 rows.
+      left_percent=''${WEZTERMLAYOUT_LEFT_PERCENT:-''${WEZLAYOUT_LEFT_PERCENT:-25}}
+      right_percent=''${WEZTERMLAYOUT_RIGHT_PERCENT:-''${WEZLAYOUT_RIGHT_PERCENT:-28}}
+      right_bottom_percent=''${WEZTERMLAYOUT_RIGHT_BOTTOM_PERCENT:-''${WEZLAYOUT_RIGHT_BOTTOM_PERCENT:-74}}
 
       codex_cmd=''${WEZTERMLAYOUT_CODEX_CMD:-''${WEZLAYOUT_CODEX_CMD:-codex}}
       clock_cmd=''${WEZTERMLAYOUT_CLOCK_CMD:-''${WEZLAYOUT_CLOCK_CMD:-analog-clock}}
