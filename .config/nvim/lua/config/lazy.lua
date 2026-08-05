@@ -27,6 +27,94 @@ vim.opt.rtp:prepend(lazypath)
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
+local fzf_lua_project_rules = require("config.fzf_lua_project_rules")
+
+local function normalize_path(path)
+  if not path or path == "" then
+    return ""
+  end
+
+  path = path:gsub("^oil://", "")
+
+  local expanded = vim.fn.fnamemodify(path, ":p"):gsub("/$", "")
+  return (vim.uv or vim.loop).fs_realpath(expanded) or expanded
+end
+
+local function is_subpath(path, root)
+  path = normalize_path(path)
+  root = normalize_path(root)
+
+  return path == root or path:sub(1, #root + 1) == root .. "/"
+end
+
+local function current_fzf_lua_project_rule()
+  local cwd = normalize_path((vim.uv or vim.loop).cwd())
+  local current_file = normalize_path(vim.api.nvim_buf_get_name(0))
+
+  for _, rule in ipairs(fzf_lua_project_rules) do
+    for _, root in ipairs(rule.roots) do
+      if is_subpath(cwd, root) then
+        return rule, nil
+      end
+
+      if is_subpath(current_file, root) then
+        return rule, normalize_path(root)
+      end
+    end
+  end
+
+  return nil, nil
+end
+
+local function fzf_lua_files_opts()
+  local rule, cwd = current_fzf_lua_project_rule()
+  local opts = {}
+
+  if cwd then
+    opts.cwd = cwd
+  end
+
+  if not rule then
+    return opts
+  end
+
+  local fd_opts = "--color=never --type f --type l --exclude .git --exclude .jj"
+  local rg_opts = [[--color=never --files -g "!.git" -g "!.jj"]]
+
+  for _, dir in ipairs(rule.exclude) do
+    fd_opts = fd_opts .. " --exclude " .. vim.fn.shellescape(dir)
+    rg_opts = rg_opts .. " -g " .. vim.fn.shellescape("!" .. dir .. "/**")
+  end
+
+  opts.fd_opts = fd_opts
+  opts.rg_opts = rg_opts
+
+  return opts
+end
+
+local function fzf_lua_live_grep_opts()
+  local rule, cwd = current_fzf_lua_project_rule()
+  local opts = {}
+
+  if cwd then
+    opts.cwd = cwd
+  end
+
+  if not rule then
+    return opts
+  end
+
+  local rg_opts = "--column --line-number --no-heading --color=always --smart-case --max-columns=4096"
+
+  for _, dir in ipairs(rule.exclude) do
+    rg_opts = rg_opts .. " -g " .. vim.fn.shellescape("!" .. dir .. "/**")
+  end
+
+  opts.rg_opts = rg_opts .. " -e"
+
+  return opts
+end
+
 require("lazy").setup({
   spec = {
     {
@@ -112,14 +200,14 @@ require("lazy").setup({
         {
           "<leader>pf",
           function()
-            require("fzf-lua").files()
+            require("fzf-lua").files(fzf_lua_files_opts())
           end,
           desc = "FzfLua: ファイル検索",
         },
         {
           "<leader>pg",
           function()
-            require("fzf-lua").live_grep()
+            require("fzf-lua").live_grep(fzf_lua_live_grep_opts())
           end,
           desc = "FzfLua: grep検索",
         },
