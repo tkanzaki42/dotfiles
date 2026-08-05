@@ -183,6 +183,25 @@ require("lazy").setup({
       },
     },
     {
+      "folke/which-key.nvim",
+      event = "VeryLazy",
+      keys = {
+        {
+          "<leader>?",
+          function()
+            require("which-key").show({ global = false })
+          end,
+          desc = "WhichKey: バッファローカルキー表示",
+        },
+      },
+      opts = {
+        preset = "modern",
+        spec = {
+          { "<leader>p", group = "FzfLua" },
+        },
+      },
+    },
+    {
       "stevearc/oil.nvim",
       ---@module "oil"
       ---@type oil.SetupOpts
