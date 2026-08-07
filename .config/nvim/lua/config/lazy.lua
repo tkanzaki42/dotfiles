@@ -238,6 +238,13 @@ require("lazy").setup({
           desc = "FzfLua: バッファ検索",
         },
         {
+          "<leader>pr",
+          function()
+            require("fzf-lua").oldfiles()
+          end,
+          desc = "FzfLua: 最近開いたファイル",
+        },
+        {
           "<leader>ph",
           function()
             require("fzf-lua").help_tags()
