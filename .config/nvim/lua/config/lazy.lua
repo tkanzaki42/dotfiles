@@ -29,6 +29,14 @@ vim.g.maplocalleader = "\\"
 
 local fzf_lua_project_rules = require("config.fzf_lua_project_rules")
 
+local function git_commit()
+  vim.cmd("tabnew")
+  vim.cmd("terminal git commit")
+  vim.cmd("startinsert")
+end
+
+vim.keymap.set("n", "<leader>gc", git_commit, { desc = "Git: commit" })
+
 local function normalize_path(path)
   if not path or path == "" then
     return ""
@@ -115,6 +123,31 @@ local function fzf_lua_live_grep_opts()
   return opts
 end
 
+local function fzf_lua_git_commits_opts()
+  return {
+    actions = {
+      ["enter"] = {
+        fn = function(selected, opts)
+          if not selected[1] then
+            return
+          end
+
+          local commit = selected[1]:match("[^ ]+")
+          if not commit then
+            return
+          end
+
+          local diff_opts = vim.deepcopy(opts.__call_opts or {})
+          diff_opts.ref = commit
+          diff_opts.ref1 = commit .. "~"
+          require("fzf-lua").git_diff(diff_opts)
+        end,
+        header = "git diff",
+      },
+    },
+  }
+end
+
 require("lazy").setup({
   spec = {
     {
@@ -197,6 +230,7 @@ require("lazy").setup({
       opts = {
         preset = "modern",
         spec = {
+          { "<leader>g", group = "Git" },
           { "<leader>p", group = "FzfLua" },
         },
       },
@@ -243,6 +277,27 @@ require("lazy").setup({
             require("fzf-lua").oldfiles()
           end,
           desc = "FzfLua: 最近開いたファイル",
+        },
+        {
+          "<leader>gs",
+          function()
+            require("fzf-lua").git_status()
+          end,
+          desc = "Git: status",
+        },
+        {
+          "<leader>gh",
+          function()
+            require("fzf-lua").git_hunks()
+          end,
+          desc = "Git: hunks",
+        },
+        {
+          "<leader>gl",
+          function()
+            require("fzf-lua").git_commits(fzf_lua_git_commits_opts())
+          end,
+          desc = "Git: commit log",
         },
         {
           "<leader>ph",
