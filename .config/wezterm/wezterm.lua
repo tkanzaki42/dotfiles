@@ -27,8 +27,8 @@ config.use_fancy_tab_bar = false
 
 -- カラースキーマを取得
 -- config.color_scheme = 'AdventureTime'    -- Looks cool
--- config.color_scheme = 'Catppuccin Mocha' -- Muted
-config.color_scheme = 'Eldritch'         -- Hacker vibe
+config.color_scheme = 'Catppuccin Mocha' -- Muted
+-- config.color_scheme = 'Eldritch'         -- Hacker vibe
 -- config.color_scheme = 'Iceberg (Dark)'   -- Recommended for coding 
 
 -- マルチディスプレイで別モニターをフォーカス時にノッチ回避機能の裏まで表示
