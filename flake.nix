@@ -15,10 +15,6 @@
 
   outputs = { home-manager, nixpkgs, ... }:
     let
-      # 環境変数から読まずに明示することで、flake評価を純粋で再現しやすくする。
-      username = "t_kanzaki";
-      homeDirectory = "/Users/${username}";
-
       systems = [
         "aarch64-darwin"
         "x86_64-darwin"
@@ -34,7 +30,7 @@
       mkWeztermLayout = pkgs: pkgs.callPackage ./packages/weztermlayout.nix { };
 
       # systemごとのHome Manager設定を作る共通関数。
-      mkHome = system:
+      mkHome = { username, system }:
         home-manager.lib.homeManagerConfiguration {
           pkgs = mkPkgs system;
           modules = [
@@ -42,7 +38,8 @@
             {
               # Home Managerが管理するユーザー名とホームディレクトリ。
               home = {
-                inherit username homeDirectory;
+                inherit username;
+                homeDirectory = "/Users/${username}";
               };
             }
           ];
@@ -103,11 +100,33 @@
       );
 
       homeConfigurations = {
-        # 現在のmacOS Apple Silicon向けの短い名前。
-        "${username}" = mkHome "aarch64-darwin";
+        # macOS Apple Silicon向けの短い名前。
+        t_kanzaki = mkHome {
+          username = "t_kanzaki";
+          system = "aarch64-darwin";
+        };
+        blp680 = mkHome {
+          username = "blp680";
+          system = "aarch64-darwin";
+        };
+
         # 明示的にCPU/OSを指定した名前。別マシンで使い分けるために残しておく。
-        "${username}-aarch64-darwin" = mkHome "aarch64-darwin";
-        "${username}-x86_64-darwin" = mkHome "x86_64-darwin";
+        t_kanzaki-aarch64-darwin = mkHome {
+          username = "t_kanzaki";
+          system = "aarch64-darwin";
+        };
+        t_kanzaki-x86_64-darwin = mkHome {
+          username = "t_kanzaki";
+          system = "x86_64-darwin";
+        };
+        blp680-aarch64-darwin = mkHome {
+          username = "blp680";
+          system = "aarch64-darwin";
+        };
+        blp680-x86_64-darwin = mkHome {
+          username = "blp680";
+          system = "x86_64-darwin";
+        };
       };
     };
 }

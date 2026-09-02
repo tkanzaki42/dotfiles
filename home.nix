@@ -17,6 +17,8 @@ in
     weztermLayout
     # エディタ本体。設定とプラグイン管理はdotfiles/lazy.nvim側に残す。
     pkgs.neovim
+    # ターミナルエミュレータ本体。設定はdotfiles側で管理する。
+    pkgs.wezterm
     # fzf-luaが使うファジーファインダー本体。
     pkgs.fzf
     # fzf-luaのlive_grepで使う高速grep。

@@ -28,11 +28,16 @@ ln -s ~/dotfiles/.config/wezterm ~/.config/wezterm
 
 ### Nix / Home Manager
 
-Nix が入っている環境では、CLIツールを Home Manager で管理する:
+Nix が入っている環境では、CLIツールを Home Manager で管理する。
+使用中のmacOSアカウントに対応する設定名を指定する:
 
 ```sh
 cd ~/dotfiles
+# t_kanzaki の場合
 nix run github:nix-community/home-manager -- switch --flake .#t_kanzaki
+
+# blp680 の場合
+nix run github:nix-community/home-manager -- switch --flake .#blp680
 ```
 
 この設定で管理する主なツール:
@@ -40,6 +45,7 @@ nix run github:nix-community/home-manager -- switch --flake .#t_kanzaki
 ```text
 analog-clock
 weztermlayout
+wezterm
 nvim
 phpactor
 php 8.4
