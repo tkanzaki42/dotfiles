@@ -321,4 +321,6 @@ require("lazy").setup({
   },
   install = { colorscheme = { "habamax" } },
   checker = { enabled = true },
+  -- 現在のプラグインはLuaRocksを必要としないため、hererocksの導入と警告を無効化する。
+  rocks = { enabled = false },
 })
