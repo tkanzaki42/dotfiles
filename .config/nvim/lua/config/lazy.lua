@@ -231,6 +231,7 @@ require("lazy").setup({
         preset = "modern",
         spec = {
           { "<leader>g", group = "Git" },
+          { "<leader>m", group = "Markdown" },
           { "<leader>p", group = "FzfLua" },
         },
       },
@@ -310,13 +311,39 @@ require("lazy").setup({
       opts = {},
     },
     {
-      "iamcco/markdown-preview.nvim",
-      cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
-      ft = { "markdown" },
-      build = function()
-        require("lazy").load({ plugins = { "markdown-preview.nvim" } })
-        vim.fn["mkdp#util#install_sync"](1)
+      "nvim-treesitter/nvim-treesitter",
+      lazy = false,
+      build = ":TSUpdate",
+      config = function()
+        local missing_parsers = {}
+
+        for _, parser in ipairs({ "markdown", "markdown_inline" }) do
+          if not vim.treesitter.language.add(parser) then
+            table.insert(missing_parsers, parser)
+          end
+        end
+
+        if #missing_parsers > 0 then
+          require("nvim-treesitter").install(missing_parsers):wait(300000)
+        end
       end,
+    },
+    {
+      "MeanderingProgrammer/render-markdown.nvim",
+      ft = { "markdown" },
+      dependencies = {
+        "nvim-treesitter/nvim-treesitter",
+        "nvim-mini/mini.icons",
+      },
+      keys = {
+        {
+          "<leader>mp",
+          "<cmd>RenderMarkdown toggle<cr>",
+          desc = "Markdown: プレビュー切替",
+          ft = "markdown",
+        },
+      },
+      opts = {},
     },
   },
   install = { colorscheme = { "habamax" } },

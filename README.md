@@ -47,6 +47,7 @@ analog-clock
 weztermlayout
 wezterm
 nvim
+tree-sitter
 phpactor
 php 8.4
 composer
@@ -81,6 +82,7 @@ weztermlayout
 
 `phpactor` は Neovim のPHP LSPとして使う。Neovimプラグイン自体は引き続き `lazy.nvim` で管理する。
 `sqruff` は SQL formatter/linter として使い、Neovim の LSP から `sqruff lsp` を起動する。
+`tree-sitter` は `render-markdown.nvim` が使うMarkdown parserのインストールと更新に使う。
 
 手動で入れた `~/.local/bin/phpactor` がある場合は、Home Manager適用後にPATHの優先順を確認する:
 
@@ -95,6 +97,7 @@ phpactor --version
 
 ```text
 dotfiles/
+├── .gitignore
 ├── flake.nix
 ├── home.nix
 ├── packages/
@@ -104,6 +107,8 @@ dotfiles/
     ├── nvim/
     └── wezterm/
 ```
+
+`.serena/` とリポジトリ直下の `nvim.log` はローカル生成物としてGitの管理対象外にする。
 
 ## Commands
 

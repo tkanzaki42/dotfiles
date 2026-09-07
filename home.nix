@@ -23,6 +23,8 @@ in
     pkgs.fzf
     # fzf-luaのlive_grepで使う高速grep。
     pkgs.ripgrep
+    # nvim-treesitterでMarkdown parserをインストール・更新するCLI。
+    pkgs.tree-sitter
     # PHP実行環境。
     pkgs.php84
     # PHPプロジェクトの依存管理。
