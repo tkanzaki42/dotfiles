@@ -202,6 +202,19 @@ require("lazy").setup({
       end,
     },
     {
+      "ricardoramirezr/blade-nav.nvim",
+      ft = { "blade", "php" },
+      opts = {
+        integrations = {
+          cmp = false,
+          coq = false,
+        },
+        annotations = {
+          create_keymaps = false,
+        },
+      },
+    },
+    {
       "lewis6991/gitsigns.nvim",
       event = { "BufReadPre", "BufNewFile" },
       opts = {
@@ -345,7 +358,7 @@ require("lazy").setup({
       config = function()
         local missing_parsers = {}
 
-        for _, parser in ipairs({ "markdown", "markdown_inline" }) do
+        for _, parser in ipairs({ "markdown", "markdown_inline", "php", "blade", "vue", "html" }) do
           if not vim.treesitter.language.add(parser) then
             table.insert(missing_parsers, parser)
           end
@@ -354,6 +367,14 @@ require("lazy").setup({
         if #missing_parsers > 0 then
           require("nvim-treesitter").install(missing_parsers):wait(300000)
         end
+
+        vim.api.nvim_create_autocmd("FileType", {
+          group = vim.api.nvim_create_augroup("UserBladeTreesitterHighlight", { clear = true }),
+          pattern = { "blade" },
+          callback = function(event)
+            vim.treesitter.start(event.buf)
+          end,
+        })
       end,
     },
     {
