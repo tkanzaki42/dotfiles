@@ -83,6 +83,9 @@ weztermlayout
 `phpactor` は Neovim のPHP LSPとして使う。Neovimプラグイン自体は引き続き `lazy.nvim` で管理する。
 `sqruff` は SQL formatter/linter として使い、Neovim の LSP から `sqruff lsp` を起動する。
 `tree-sitter` は `render-markdown.nvim` が使うMarkdown parserのインストールと更新に使う。
+Neovim内のターミナルは `toggleterm.nvim` で管理し、ノーマルモードで `Space`、`t`、`t` の順に
+押すとフローティングウィンドウで開閉する。`Ctrl+\`（日本語キーボードでは `Ctrl+¥`）も利用できる。
+初回起動時は `lazy.nvim` がプラグインを自動で取得する。
 
 手動で入れた `~/.local/bin/phpactor` がある場合は、Home Manager適用後にPATHの優先順を確認する:
 

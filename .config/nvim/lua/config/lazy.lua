@@ -233,6 +233,7 @@ require("lazy").setup({
           { "<leader>g", group = "Git" },
           { "<leader>m", group = "Markdown" },
           { "<leader>p", group = "FzfLua" },
+          { "<leader>t", group = "Terminal" },
         },
       },
     },
@@ -245,6 +246,33 @@ require("lazy").setup({
       lazy = false,
       keys = {
         { "-", "<cmd>Oil<cr>", desc = "Open parent directory" },
+      },
+    },
+    {
+      -- nvim内ターミナルの設定
+      "akinsho/toggleterm.nvim",
+      version = "*",
+      lazy = false,
+      keys = {
+        { "<leader>tt", "<cmd>ToggleTerm<cr>", desc = "Terminal: 開閉" },
+      },
+      opts = {
+        open_mapping = { [[<C-\>]], [[<C-¥>]] },
+        direction = "float",
+        float_opts = {
+          border = "curved",
+	  -- 横
+          width = function()
+            return math.floor(vim.o.columns * 0.8)
+          end,
+	  -- 縦
+          height = function()
+            return math.floor(vim.o.lines * 0.9)
+          end,
+        },
+        start_in_insert = true,
+        insert_mappings = true,
+        terminal_mappings = true,
       },
     },
     {
