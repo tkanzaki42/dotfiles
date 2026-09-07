@@ -255,10 +255,59 @@ require("lazy").setup({
       ---@module "oil"
       ---@type oil.SetupOpts
       opts = {},
+      config = function(_, opts)
+        local oil = require("oil")
+        oil.setup(opts)
+
+	-- プレビュー表示
+        local group = vim.api.nvim_create_augroup("OilAutoPreview", { clear = true })
+        vim.api.nvim_create_autocmd("User", {
+          group = group,
+          pattern = "OilEnter",
+          callback = function(event)
+            local bufnr = event.data and event.data.buf
+            if not bufnr then
+              return
+            end
+
+            vim.schedule(function()
+              if not vim.api.nvim_buf_is_valid(bufnr) then
+                return
+              end
+
+              local oil_win
+              for _, winid in ipairs(vim.fn.win_findbuf(bufnr)) do
+                if vim.api.nvim_win_is_valid(winid) and not vim.w[winid].oil_preview then
+                  oil_win = winid
+                  break
+                end
+              end
+
+              if not oil_win then
+                return
+              end
+
+              local tabpage = vim.api.nvim_win_get_tabpage(oil_win)
+              for _, winid in ipairs(vim.api.nvim_tabpage_list_wins(tabpage)) do
+                if vim.w[winid].oil_preview then
+                  return
+                end
+              end
+
+              vim.api.nvim_win_call(oil_win, function()
+                oil.open_preview({
+                  vertical = true,
+                  split = "belowright",
+                })
+              end)
+            end)
+          end,
+        })
+      end,
       dependencies = { { "nvim-mini/mini.icons", opts = {} } },
       lazy = false,
       keys = {
-        { "-", "<cmd>Oil<cr>", desc = "Open parent directory" },
+        { "-", "<cmd>Oil<cr>", desc = "Open parent directory with preview" },
       },
     },
     {
