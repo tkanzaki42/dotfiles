@@ -33,6 +33,8 @@ in
     pkgs.phpactor
     # SQL formatter/linter。NeovimのLSPから `sqruff lsp` として使う。
     pkgs.sqruff
+    # vim-dadbodがMySQL/MariaDBへ接続するときに使うCLI。
+    pkgs.mariadb.client
   ];
 
   # `home-manager` コマンド自体もHome Manager管理下に置く。

@@ -52,6 +52,7 @@ phpactor
 php 8.4
 composer
 sqruff
+mariadb-client
 ```
 
 `analog-clock` はターミナル上でアナログ時計を表示する。初回起動時に
@@ -82,6 +83,10 @@ weztermlayout
 
 `phpactor` は Neovim のPHP LSPとして使う。Neovimプラグイン自体は引き続き `lazy.nvim` で管理する。
 `sqruff` は SQL formatter/linter として使い、Neovim の LSP から `sqruff lsp` を起動する。
+NeovimのSQLクライアントには `vim-dadbod` と `vim-dadbod-ui` を使う。`Space`、`d`、`b` の順に
+押すとDBUIを開閉でき、`Space`、`d`、`a` で接続先を追加できる。MySQL/MariaDB接続用の
+`mysql` CLIはHome Managerの `mariadb-client` で導入する。PostgreSQLなど他のDBを使う場合は、
+dadbodが呼び出す対応CLIを別途 `home.packages` に追加する。
 `tree-sitter` は `render-markdown.nvim` が使うMarkdown parserのインストールと更新に使う。
 Neovim内のターミナルは `toggleterm.nvim` で管理し、ノーマルモードで `Space`、`t`、`t` の順に
 押すとフローティングウィンドウで開閉する。`Ctrl+\`（日本語キーボードでは `Ctrl+¥`）も利用できる。

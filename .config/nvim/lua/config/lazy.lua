@@ -215,6 +215,28 @@ require("lazy").setup({
       },
     },
     {
+      "kristijanhusak/vim-dadbod-ui",
+      dependencies = {
+        { "tpope/vim-dadbod", lazy = true },
+        {
+          "kristijanhusak/vim-dadbod-completion",
+          ft = { "sql", "mysql", "plsql" },
+          lazy = true,
+        },
+      },
+      cmd = {
+        "DBUI",
+        "DBUIToggle",
+        "DBUIAddConnection",
+        "DBUIFindBuffer",
+      },
+      keys = {
+        { "<leader>db", "<cmd>DBUIToggle<cr>", desc = "Database: UI切替" },
+        { "<leader>da", "<cmd>DBUIAddConnection<cr>", desc = "Database: 接続を追加" },
+        { "<leader>df", "<cmd>DBUIFindBuffer<cr>", desc = "Database: 現在のバッファを表示" },
+      },
+    },
+    {
       "lewis6991/gitsigns.nvim",
       event = { "BufReadPre", "BufNewFile" },
       opts = {
@@ -243,6 +265,7 @@ require("lazy").setup({
       opts = {
         preset = "modern",
         spec = {
+          { "<leader>d", group = "Database" },
           { "<leader>g", group = "Git" },
           { "<leader>m", group = "Markdown" },
           { "<leader>p", group = "FzfLua" },
