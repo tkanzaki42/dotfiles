@@ -237,6 +237,26 @@ require("lazy").setup({
       },
     },
     {
+      "saghen/blink.cmp",
+      version = "1.*",
+      ft = { "sql", "mysql", "plsql" },
+      opts = {
+        keymap = { preset = "default" },
+        completion = {
+          documentation = { auto_show = true },
+        },
+        sources = {
+          default = { "dadbod", "buffer" },
+          providers = {
+            dadbod = {
+              name = "Dadbod",
+              module = "vim_dadbod_completion.blink",
+            },
+          },
+        },
+      },
+    },
+    {
       "lewis6991/gitsigns.nvim",
       event = { "BufReadPre", "BufNewFile" },
       opts = {
