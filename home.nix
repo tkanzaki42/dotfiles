@@ -31,6 +31,8 @@ in
     pkgs.php84Packages.composer
     # Neovimから使うPHP LSP本体。
     pkgs.phpactor
+    # Masonで導入するPHP Debug Adapterの実行ランタイム。
+    pkgs.nodejs_22
     # SQL formatter/linter。NeovimのLSPから `sqruff lsp` として使う。
     pkgs.sqruff
     # vim-dadbodがMySQL/MariaDBへ接続するときに使うCLI。

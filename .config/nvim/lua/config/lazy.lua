@@ -237,6 +237,93 @@ require("lazy").setup({
       },
     },
     {
+      "mfussenegger/nvim-dap",
+      dependencies = {
+        { "mason-org/mason.nvim", opts = {} },
+        {
+          "jay-babu/mason-nvim-dap.nvim",
+          opts = {
+            ensure_installed = { "php" },
+            handlers = {},
+          },
+        },
+        {
+          "rcarriga/nvim-dap-ui",
+          dependencies = { "nvim-neotest/nvim-nio" },
+        },
+      },
+      config = function()
+        local dap = require("dap")
+        local dapui = require("dapui")
+
+        local function php_project_root()
+          local current_file = vim.api.nvim_buf_get_name(0)
+          local root = vim.fs.root(current_file ~= "" and current_file or 0, { ".git", "composer.json" })
+          return root or (vim.uv or vim.loop).cwd()
+        end
+
+        local function php_path_mappings()
+          local project_root = php_project_root()
+          local project_name = vim.fs.basename(project_root)
+          local remote_roots = {
+            ["bp-store-api"] = "/var/www/html",
+            ["front_manage"] = "/var/www/html/manage",
+            ["kddi-bp-front_manage"] = "/var/www/html/manage",
+            ["kddi-bp-front_uiux_sp"] = "/var/www/html/uiux",
+            ["kddi-bp-itemmaster_management-tool"] = "/var/www/management-tool",
+          }
+          local remote_root = vim.env.NVIM_PHP_XDEBUG_REMOTE_ROOT or remote_roots[project_name] or "/var/www/html"
+
+          return { [remote_root] = project_root }
+        end
+
+        dap.configurations.php = {
+          {
+            type = "php",
+            request = "launch",
+            name = "PHP: Listen for Xdebug (Docker)",
+            hostname = "0.0.0.0",
+            port = 9003,
+            pathMappings = php_path_mappings,
+          },
+        }
+
+        dapui.setup()
+
+        dap.listeners.before.attach.php_dapui = function()
+          dapui.open()
+        end
+        dap.listeners.before.launch.php_dapui = function()
+          dapui.open()
+        end
+        dap.listeners.before.event_terminated.php_dapui = function()
+          dapui.close()
+        end
+        dap.listeners.before.event_exited.php_dapui = function()
+          dapui.close()
+        end
+
+        vim.fn.sign_define("DapBreakpoint", { text = "●", texthl = "DiagnosticError" })
+        vim.fn.sign_define("DapBreakpointCondition", { text = "◆", texthl = "DiagnosticWarn" })
+        vim.fn.sign_define("DapStopped", { text = "▶", texthl = "DiagnosticInfo", linehl = "Visual" })
+      end,
+      keys = {
+        { "<F5>", function() require("dap").continue() end, desc = "Debug: 開始/続行" },
+        { "<F9>", function() require("dap").toggle_breakpoint() end, desc = "Debug: ブレークポイント切替" },
+        { "<F10>", function() require("dap").step_over() end, desc = "Debug: ステップオーバー" },
+        { "<F11>", function() require("dap").step_into() end, desc = "Debug: ステップイン" },
+        { "<F12>", function() require("dap").step_out() end, desc = "Debug: ステップアウト" },
+        { "<leader>xb", function() require("dap").toggle_breakpoint() end, desc = "Debug: ブレークポイント切替" },
+        { "<leader>xc", function() require("dap").continue() end, desc = "Debug: 開始/続行" },
+        { "<leader>xn", function() require("dap").step_over() end, desc = "Debug: ステップオーバー" },
+        { "<leader>xi", function() require("dap").step_into() end, desc = "Debug: ステップイン" },
+        { "<leader>xo", function() require("dap").step_out() end, desc = "Debug: ステップアウト" },
+        { "<leader>xt", function() require("dap").terminate() end, desc = "Debug: 終了" },
+        { "<leader>xu", function() require("dapui").toggle() end, desc = "Debug: UI切替" },
+        { "<leader>xe", function() require("dapui").eval() end, mode = { "n", "v" }, desc = "Debug: 式を評価" },
+      },
+    },
+    {
       "saghen/blink.cmp",
       version = "1.*",
       ft = { "sql", "mysql", "plsql" },
@@ -290,6 +377,7 @@ require("lazy").setup({
           { "<leader>m", group = "Markdown" },
           { "<leader>p", group = "FzfLua" },
           { "<leader>t", group = "Terminal" },
+          { "<leader>x", group = "Debug" },
         },
       },
     },

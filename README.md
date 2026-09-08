@@ -51,6 +51,7 @@ tree-sitter
 phpactor
 php 8.4
 composer
+node.js 22
 sqruff
 mariadb-client
 ```
@@ -82,6 +83,12 @@ weztermlayout
 `WEZTERM_BIN` で上書きできる。比率や起動コマンドは `WEZTERMLAYOUT_*` 環境変数で上書きできる。
 
 `phpactor` は Neovim のPHP LSPとして使う。Neovimプラグイン自体は引き続き `lazy.nvim` で管理する。
+PHPデバッグには `nvim-dap`、`nvim-dap-ui`、Mason管理の `php-debug-adapter` を使う。
+PHPファイルで `F9` でブレークポイントを切り替え、`F5` でXdebug待受を開始する。
+`F10` / `F11` / `F12` はそれぞれステップオーバー / イン / アウト。
+`Space`、`x` 配下からも同じ操作とDAP UIの切り替え、式の評価ができる。
+Docker内のパスは既知のPHPリポジトリ名から自動判定し、必要な場合は
+`NVIM_PHP_XDEBUG_REMOTE_ROOT` でコンテナ内のプロジェクトルートを上書きできる。
 `sqruff` は SQL formatter/linter として使い、Neovim の LSP から `sqruff lsp` を起動する。
 NeovimのSQLクライアントには `vim-dadbod` と `vim-dadbod-ui` を使う。`Space`、`d`、`b` の順に
 押すとDBUIを開閉でき、`Space`、`d`、`a` で接続先を追加できる。MySQL/MariaDB接続用の
