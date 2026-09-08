@@ -450,7 +450,7 @@ require("lazy").setup({
       config = function()
         local missing_parsers = {}
 
-        for _, parser in ipairs({ "markdown", "markdown_inline", "php", "blade", "vue", "html" }) do
+        for _, parser in ipairs({ "markdown", "markdown_inline", "php", "blade", "vue", "html", "sql" }) do
           if not vim.treesitter.language.add(parser) then
             table.insert(missing_parsers, parser)
           end
@@ -466,6 +466,41 @@ require("lazy").setup({
           callback = function(event)
             vim.treesitter.start(event.buf)
           end,
+        })
+
+        vim.api.nvim_create_autocmd("FileType", {
+          group = vim.api.nvim_create_augroup("UserSqlTreesitterHighlight", { clear = true }),
+          pattern = { "sql", "mysql", "plsql" },
+          callback = function(event)
+            vim.treesitter.start(event.buf, "sql")
+          end,
+        })
+
+        local function apply_sql_highlights()
+          local highlights = {
+            ["@keyword.sql"] = { fg = "#fce094", bold = true },
+            ["@keyword.conditional.sql"] = { fg = "#fce094", bold = true },
+            ["@keyword.modifier.sql"] = { fg = "#fce094", bold = true },
+            ["@type.sql"] = { fg = "#8cf8f7" },
+            ["@function.call.sql"] = { fg = "#8cf8f7" },
+            ["@variable.member.sql"] = { fg = "#a6dbff" },
+            ["@string.sql"] = { fg = "#b3f6c0" },
+            ["@number.sql"] = { fg = "#ffc0b9" },
+            ["@number.float.sql"] = { fg = "#ffc0b9" },
+            ["@comment.sql"] = { fg = "#9b9ea4", italic = true },
+            ["@operator.sql"] = { fg = "#fce094" },
+          }
+
+          for group, options in pairs(highlights) do
+            vim.api.nvim_set_hl(0, group, options)
+          end
+        end
+
+        apply_sql_highlights()
+
+        vim.api.nvim_create_autocmd("ColorScheme", {
+          group = vim.api.nvim_create_augroup("UserSqlTreesitterColors", { clear = true }),
+          callback = apply_sql_highlights,
         })
       end,
     },
