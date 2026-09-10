@@ -347,6 +347,29 @@ require("lazy").setup({
       "lewis6991/gitsigns.nvim",
       event = { "BufReadPre", "BufNewFile" },
       opts = {
+        on_attach = function(bufnr)
+          local gitsigns = require("gitsigns")
+
+          local function map(lhs, rhs, desc)
+            vim.keymap.set("n", lhs, rhs, { buffer = bufnr, desc = desc })
+          end
+
+          map("]c", function()
+            if vim.wo.diff then
+              vim.cmd.normal({ "]c", bang = true })
+            else
+              gitsigns.nav_hunk("next")
+            end
+          end, "Git: 次の変更へ")
+
+          map("[c", function()
+            if vim.wo.diff then
+              vim.cmd.normal({ "[c", bang = true })
+            else
+              gitsigns.nav_hunk("prev")
+            end
+          end, "Git: 前の変更へ")
+        end,
         current_line_blame = true,
         current_line_blame_opts = {
           virt_text = true,
