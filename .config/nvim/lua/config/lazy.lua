@@ -369,6 +369,8 @@ require("lazy").setup({
               gitsigns.nav_hunk("prev")
             end
           end, "Git: 前の変更へ")
+
+          map("<leader>gp", gitsigns.preview_hunk, "Git: 変更をプレビュー")
         end,
         current_line_blame = true,
         current_line_blame_opts = {
