@@ -55,7 +55,7 @@ let
       right_bottom_percent=''${WEZTERMLAYOUT_RIGHT_BOTTOM_PERCENT:-''${WEZLAYOUT_RIGHT_BOTTOM_PERCENT:-74}}
 
       codex_cmd=''${WEZTERMLAYOUT_CODEX_CMD:-''${WEZLAYOUT_CODEX_CMD:-codex}}
-      clock_cmd=''${WEZTERMLAYOUT_CLOCK_CMD:-''${WEZLAYOUT_CLOCK_CMD:-analog-clock}}
+      clock_cmd=''${WEZTERMLAYOUT_CLOCK_CMD:-''${WEZLAYOUT_CLOCK_CMD:-env ANALOG_CLOCK_FORCE_SECOND_HAND=1 analog-clock}}
 
       validate_percent WEZTERMLAYOUT_LEFT_PERCENT "$left_percent"
       validate_percent WEZTERMLAYOUT_RIGHT_PERCENT "$right_percent"

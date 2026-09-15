@@ -79,7 +79,8 @@ weztermlayout
 
 `weztermlayout` は WezTerm の中で実行する。現在のペインを中央の作業ペインとして残し、
 左に `codex`、右上に `analog-clock`、右下に通常ターミナルを作る。短い alias として
-`wezlayout` も使える。WezTerm本体と `codex` はPATH上にある前提で、WezTerm CLIの場所は
+`wezlayout` も使える。右上の時計は起動時にアナログ表示と秒針を有効にする。
+WezTerm本体と `codex` はPATH上にある前提で、WezTerm CLIの場所は
 `WEZTERM_BIN` で上書きできる。比率や起動コマンドは `WEZTERMLAYOUT_*` 環境変数で上書きできる。
 
 `phpactor` は Neovim のPHP LSPとして使う。Neovimプラグイン自体は引き続き `lazy.nvim` で管理する。
