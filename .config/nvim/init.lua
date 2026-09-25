@@ -7,6 +7,7 @@ vim.api.nvim_set_hl(0, "Normal", {
 
 -- 行番号表示
 vim.opt.number = true
+vim.api.nvim_set_hl(0, "LineNr", { fg = "#7f849c" })
 
 -- 相対行表示
 vim.opt.relativenumber = true
