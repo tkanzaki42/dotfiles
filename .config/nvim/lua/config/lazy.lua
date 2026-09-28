@@ -283,6 +283,7 @@ require("lazy").setup({
           end, "Git: 前の変更へ")
 
           map("<leader>gp", gitsigns.preview_hunk, "Git: 変更をプレビュー")
+          map("<leader>gr", gitsigns.reset_hunk, "Git: hunkを戻す")
         end,
         current_line_blame = true,
         current_line_blame_opts = {
