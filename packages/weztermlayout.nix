@@ -1,11 +1,29 @@
 {
   bash,
+  coreutils,
   symlinkJoin,
   writeShellApplication,
   zsh,
 }:
 
 let
+  codexPersonal = writeShellApplication {
+    name = "codex-personal";
+    text = ''
+      export CODEX_HOME="$HOME/.codex"
+      exec codex "$@"
+    '';
+  };
+  codexWork = writeShellApplication {
+    name = "codex-work";
+    runtimeInputs = [ coreutils ];
+    text = ''
+      export CODEX_HOME="$HOME/.codex-work"
+      umask 077
+      mkdir -p "$CODEX_HOME"
+      exec codex -c 'cli_auth_credentials_store="file"' "$@"
+    '';
+  };
   weztermLayout = writeShellApplication {
     name = "weztermlayout";
     runtimeInputs = [
@@ -34,6 +52,14 @@ let
         printf '\n'
       }
 
+      mode=''${1:-personal}
+      case "$mode" in
+        work) default_codex_cmd=${codexWork}/bin/codex-work ;;
+        personal) default_codex_cmd=${codexPersonal}/bin/codex-personal ;;
+        *) die "usage: weztermlayout [work|personal]" ;;
+      esac
+      (( $# <= 1 )) || die "usage: weztermlayout [work|personal]"
+
       wezterm_bin=''${WEZTERM_BIN:-}
       if [[ -z "$wezterm_bin" ]]; then
         wezterm_bin=$(command -v wezterm || true)
@@ -54,7 +80,7 @@ let
       right_percent=''${WEZTERMLAYOUT_RIGHT_PERCENT:-''${WEZLAYOUT_RIGHT_PERCENT:-28}}
       right_bottom_percent=''${WEZTERMLAYOUT_RIGHT_BOTTOM_PERCENT:-''${WEZLAYOUT_RIGHT_BOTTOM_PERCENT:-74}}
 
-      codex_cmd=''${WEZTERMLAYOUT_CODEX_CMD:-''${WEZLAYOUT_CODEX_CMD:-codex}}
+      codex_cmd=''${WEZTERMLAYOUT_CODEX_CMD:-''${WEZLAYOUT_CODEX_CMD:-$default_codex_cmd}}
       clock_cmd=''${WEZTERMLAYOUT_CLOCK_CMD:-''${WEZLAYOUT_CLOCK_CMD:-env ANALOG_CLOCK_FORCE_SECOND_HAND=1 analog-clock}}
 
       validate_percent WEZTERMLAYOUT_LEFT_PERCENT "$left_percent"
@@ -75,13 +101,25 @@ let
 
       "$wezterm_bin" cli activate-pane --pane-id "$main_pane"
 
-      printf 'layout ready: codex=%s main=%s clock=%s terminal=%s\n' "$left_pane" "$main_pane" "$right_pane" "$bottom_pane"
+      printf 'layout ready (%s): codex=%s main=%s clock=%s terminal=%s\n' "$mode" "$left_pane" "$main_pane" "$right_pane" "$bottom_pane"
+    '';
+  };
+  work = writeShellApplication {
+    name = "work";
+    text = ''
+      exec ${weztermLayout}/bin/weztermlayout work "$@"
+    '';
+  };
+  play = writeShellApplication {
+    name = "play";
+    text = ''
+      exec ${weztermLayout}/bin/weztermlayout personal "$@"
     '';
   };
 in
 symlinkJoin {
   name = "weztermlayout";
-  paths = [ weztermLayout ];
+  paths = [ weztermLayout codexPersonal codexWork work play ];
   postBuild = ''
     ln -s weztermlayout "$out/bin/wezlayout"
   '';

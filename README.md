@@ -84,6 +84,50 @@ weztermlayout
 WezTerm本体と `codex` はPATH上にある前提で、WezTerm CLIの場所は
 `WEZTERM_BIN` で上書きできる。比率や起動コマンドは `WEZTERMLAYOUT_*` 環境変数で上書きできる。
 
+### 個人用・会社用の作業開始
+
+Home Manager を適用したら、WezTerm 内で以下を実行する:
+
+```sh
+play  # 個人用レイアウト（左に個人用 Codex）
+work  # 会社用レイアウト（左に会社用 Codex）
+```
+
+`wezlayout` / `weztermlayout` は個人用がデフォルト。
+`wezlayout work` / `wezlayout personal` でも指定できる。
+`WEZTERMLAYOUT_CODEX_CMD` / `WEZLAYOUT_CODEX_CMD` が設定されている場合は、
+どちらのモードでもその起動コマンドが優先されるため、アカウントを分ける場合は解除する。
+各コマンドは現在のペインから新しく分割するため、既存レイアウトの切り替えには使わず、
+新しいタブなどで実行する。
+
+Codex だけを起動するコマンドも用意する:
+
+```sh
+codex-personal  # CODEX_HOME=~/.codex（既存の設定・認証を使用）
+codex-work      # CODEX_HOME=~/.codex-work（会社用）
+```
+
+通常の `codex` は引き続き既存の個人用環境として使う。
+シェルで `CODEX_HOME` を別の場所に設定している場合は解除するか、`codex-personal` を使う。
+既存の `~/.codex` が会社アカウントの場合は、`codex-personal login` で個人用にログインし直す。
+会社用は初回に以下を実行し、ブラウザで会社アカウント・会社ワークスペースを選ぶ:
+
+```sh
+codex-work login
+```
+
+`codex-work` は初回起動時に `~/.codex-work` を作成し、認証情報を
+その中の `auth.json` に保存する。設定・履歴も個人用と分かれる。
+必要な会社用設定や MCP は `~/.codex-work/config.toml` などに別途設定する。
+認証ファイルや履歴は dotfiles にコピーせず、Git 管理に入れない。
+
+Home Manager 適用前にレイアウトを試す場合:
+
+```sh
+nix run .#weztermlayout -- work
+nix run .#weztermlayout -- personal
+```
+
 `phpactor` は Neovim のPHP LSPとして使う。Neovimプラグイン自体は引き続き `lazy.nvim` で管理する。
 画像プレビューには `snacks.nvim` の image 機能を使う。`nvim photo.png` や
 `:edit photo.jpg` で画像を開ける。SVG・ICOもプレビュー対象に含める。
@@ -133,6 +177,8 @@ dotfiles/
 ```
 
 `.serena/` とリポジトリ直下の `nvim.log` はローカル生成物としてGitの管理対象外にする。
+`packages/weztermlayout.nix` は `weztermlayout` / `wezlayout` に加え、
+`work` / `play` と `codex-work` / `codex-personal` も提供する。
 
 ## Commands
 
