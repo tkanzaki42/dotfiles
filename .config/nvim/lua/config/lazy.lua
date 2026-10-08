@@ -67,13 +67,35 @@ require("lazy").setup({
       priority = 1000,
       lazy = false,
       opts = {
-        image = { enabled = true },
+        image = {
+          enabled = true,
+          -- SVG・ICOは標準の対象外だが、ImageMagickで変換して表示できる。
+          formats = {
+            "png", "jpg", "jpeg", "gif", "bmp", "webp", "tiff",
+            "heic", "avif", "mp4", "mov", "avi", "mkv", "webm",
+            "pdf", "icns", "svg", "ico",
+          },
+        },
       },
       config = function(_, opts)
         require("snacks").setup(opts)
 
         -- Oilの初回プレビューでも描画し、WezTermに前の画像を残さない。
         local group = vim.api.nvim_create_augroup("ImagePreviewLifecycle", { clear = true })
+        local function redraw_image(buf)
+          Snacks.image.terminal.detect(function()
+            -- 端末検出中に別の画像へ移動した場合は描画しない。
+            if vim.api.nvim_buf_is_valid(buf) and #vim.fn.win_findbuf(buf) > 0 then
+              -- attachは既存の描画を消去して、新しい描画状態を作る。
+              Snacks.image.buf.attach(buf)
+              if vim.bo[buf].filetype == "image" then
+                -- 読み込み表示がバッファを書き換えても保存対象にしない。
+                vim.bo[buf].buftype = "nofile"
+                vim.bo[buf].modified = false
+              end
+            end
+          end)
+        end
         vim.api.nvim_create_autocmd("BufWinLeave", {
           group = group,
           callback = function(event)
@@ -92,18 +114,30 @@ require("lazy").setup({
               return
             end
             vim.schedule(function()
-              Snacks.image.terminal.detect(function()
-                -- 端末検出中に別の画像へ移動した場合は描画しない。
-                if vim.api.nvim_buf_is_valid(buf) and #vim.fn.win_findbuf(buf) > 0 then
-                  Snacks.image.buf.attach(buf)
-                  if vim.bo[buf].filetype == "image" then
-                    -- 読み込み表示がバッファを書き換えても保存対象にしない。
-                    vim.bo[buf].buftype = "nofile"
-                    vim.bo[buf].modified = false
-                  end
-                end
-              end)
+              redraw_image(buf)
             end)
+          end,
+        })
+        local resize_generation = 0
+        vim.api.nvim_create_autocmd("VimResized", {
+          group = group,
+          callback = function()
+            resize_generation = resize_generation + 1
+            local generation = resize_generation
+            -- 端末の再描画と連続リサイズが落ち着いてから画像を復元する。
+            vim.defer_fn(function()
+              if generation ~= resize_generation then
+                return
+              end
+              local seen = {}
+              for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+                local buf = vim.api.nvim_win_get_buf(win)
+                if not seen[buf] and vim.bo[buf].filetype == "image" then
+                  seen[buf] = true
+                  redraw_image(buf)
+                end
+              end
+            end, 100)
           end,
         })
       end,

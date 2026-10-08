@@ -86,7 +86,9 @@ WezTerm本体と `codex` はPATH上にある前提で、WezTerm CLIの場所は
 
 `phpactor` は Neovim のPHP LSPとして使う。Neovimプラグイン自体は引き続き `lazy.nvim` で管理する。
 画像プレビューには `snacks.nvim` の image 機能を使う。`nvim photo.png` や
-`:edit photo.jpg` で画像を開ける。画像形式の変換には Home Manager 管理の ImageMagick を使う。
+`:edit photo.jpg` で画像を開ける。SVG・ICOもプレビュー対象に含める。
+アニメーションGIFは先頭フレームを静止画として表示する。
+画像形式の変換には Home Manager 管理の ImageMagick を使う。
 Oil の自動プレビューと fzf-lua のプレビューでも画像表示を利用する。
 WezTermでは画像ファイルの表示に対応するが、Markdown本文中へのインライン表示には対応しない。
 表示に問題がある場合は `:checkhealth snacks` で確認する。
