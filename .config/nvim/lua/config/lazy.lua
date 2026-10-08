@@ -63,6 +63,52 @@ end
 require("lazy").setup({
   spec = {
     {
+      "folke/snacks.nvim",
+      priority = 1000,
+      lazy = false,
+      opts = {
+        image = { enabled = true },
+      },
+      config = function(_, opts)
+        require("snacks").setup(opts)
+
+        -- Oilの初回プレビューでも描画し、WezTermに前の画像を残さない。
+        local group = vim.api.nvim_create_augroup("ImagePreviewLifecycle", { clear = true })
+        vim.api.nvim_create_autocmd("BufWinLeave", {
+          group = group,
+          callback = function(event)
+            if vim.bo[event.buf].filetype == "image" then
+              Snacks.image.placement.clean(event.buf)
+              vim.bo[event.buf].modified = false
+            end
+          end,
+        })
+        vim.api.nvim_create_autocmd("BufWinEnter", {
+          group = group,
+          callback = function(event)
+            local buf = event.buf
+            local file = vim.api.nvim_buf_get_name(buf)
+            if not Snacks.image.supports_file(file) then
+              return
+            end
+            vim.schedule(function()
+              Snacks.image.terminal.detect(function()
+                -- 端末検出中に別の画像へ移動した場合は描画しない。
+                if vim.api.nvim_buf_is_valid(buf) and #vim.fn.win_findbuf(buf) > 0 then
+                  Snacks.image.buf.attach(buf)
+                  if vim.bo[buf].filetype == "image" then
+                    -- 読み込み表示がバッファを書き換えても保存対象にしない。
+                    vim.bo[buf].buftype = "nofile"
+                    vim.bo[buf].modified = false
+                  end
+                end
+              end)
+            end)
+          end,
+        })
+      end,
+    },
+    {
       "neovim/nvim-lspconfig",
       config = function()
         -- LSPが有効になったバッファだけに、LSP用のキーマップを設定する。
