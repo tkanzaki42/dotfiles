@@ -140,8 +140,20 @@ PHPデバッグには `nvim-dap`、`nvim-dap-ui`、Mason管理の `php-debug-ada
 PHPファイルで `F9` でブレークポイントを切り替え、`F5` でXdebug待受を開始する。
 `F10` / `F11` / `F12` はそれぞれステップオーバー / イン / アウト。
 `Space`、`x` 配下からも同じ操作とDAP UIの切り替え、式の評価ができる。
-Docker内のパスは既知のPHPリポジトリ名から自動判定し、必要な場合は
-`NVIM_PHP_XDEBUG_REMOTE_ROOT` でコンテナ内のプロジェクトルートを上書きできる。
+Docker内のパスは `~/.config/nvim-local/php-xdebug-remote-roots.json` の対応表から
+PHPリポジトリ名で判定する。このファイルはdotfilesの外で管理する。
+必要な場合だけ `~/.config/nvim-local` を作成し、以下の形式で保存する:
+
+```json
+{
+  "example-project": "/var/www/html"
+}
+```
+
+対応表がない場合や該当するリポジトリがない場合は `/var/www/html` を使う。
+`NVIM_PHP_XDEBUG_REMOTE_ROOT` が設定されている場合は、対応表より優先して
+コンテナ内のプロジェクトルートを上書きする。
+会社固有の対応表はdotfilesにコピーせず、Git管理に入れない。
 `sqruff` は SQL formatter/linter として使い、Neovim の LSP から `sqruff lsp` を起動する。
 NeovimのSQLクライアントには `vim-dadbod` と `vim-dadbod-ui` を使う。`Space`、`d`、`b` の順に
 押すとDBUIを開閉でき、`Space`、`d`、`a` で接続先を追加できる。MySQL/MariaDB接続用の

@@ -257,13 +257,28 @@ require("lazy").setup({
         local function php_path_mappings()
           local project_root = php_project_root()
           local project_name = vim.fs.basename(project_root)
-          local remote_roots = {
-            ["bp-store-api"] = "/var/www/html",
-            ["front_manage"] = "/var/www/html/manage",
-            ["kddi-bp-front_manage"] = "/var/www/html/manage",
-            ["kddi-bp-front_uiux_sp"] = "/var/www/html/uiux",
-            ["kddi-bp-itemmaster_management-tool"] = "/var/www/management-tool",
-          }
+          -- Keep machine-specific project names outside the symlinked nvim config.
+          local local_config = vim.fn.expand("~/.config/nvim-local/php-xdebug-remote-roots.json")
+          local remote_roots = {}
+          if vim.fn.filereadable(local_config) == 1 then
+            local ok, decoded = pcall(function()
+              return vim.json.decode(table.concat(vim.fn.readfile(local_config), "\n"))
+            end)
+            local valid = ok and type(decoded) == "table" and not vim.islist(decoded)
+            if valid then
+              for project, remote_path in pairs(decoded) do
+                if type(project) ~= "string" or type(remote_path) ~= "string" or remote_path:sub(1, 1) ~= "/" then
+                  valid = false
+                  break
+                end
+              end
+            end
+            if valid then
+              remote_roots = decoded
+            else
+              vim.notify("Invalid PHP Xdebug local mapping: " .. local_config, vim.log.levels.WARN)
+            end
+          end
           local remote_root = vim.env.NVIM_PHP_XDEBUG_REMOTE_ROOT or remote_roots[project_name] or "/var/www/html"
 
           return { [remote_root] = project_root }
