@@ -1,0 +1,46 @@
+{ pkgs, ... }:
+
+let
+  analogClock = pkgs.callPackage ./packages/analog-clock.nix { };
+  weztermLayout = pkgs.callPackage ./packages/weztermlayout.nix { };
+in
+{
+  # Home Managerの互換性基準。初回導入時のリリースに合わせて固定する。
+  home.stateVersion = "26.05";
+
+  # Nixで再現したいユーザー環境のCLIツール。
+  # gitやcodexのようなbootstrap/自己管理ツールはここでは管理しない。
+  home.packages = [
+    # ターミナル上でアナログ時計を表示するラッパー。
+    analogClock
+    # WezTermの作業用ペイン構成を一発で作るコマンド。
+    weztermLayout
+    # エディタ本体。設定とプラグイン管理はdotfiles/lazy.nvim側に残す。
+    pkgs.neovim
+    # Snacksの画像プレビューで画像形式の変換に使う。
+    pkgs.imagemagick
+    # ターミナルエミュレータ本体。設定はdotfiles側で管理する。
+    pkgs.wezterm
+    # fzf-luaが使うファジーファインダー本体。
+    pkgs.fzf
+    # fzf-luaのlive_grepで使う高速grep。
+    pkgs.ripgrep
+    # nvim-treesitterでMarkdown parserをインストール・更新するCLI。
+    pkgs.tree-sitter
+    # PHP実行環境。
+    pkgs.php84
+    # PHPプロジェクトの依存管理。
+    pkgs.php84Packages.composer
+    # Neovimから使うPHP LSP本体。
+    pkgs.phpactor
+    # Masonで導入するPHP Debug Adapterの実行ランタイム。
+    pkgs.nodejs_22
+    # SQL formatter/linter。NeovimのLSPから `sqruff lsp` として使う。
+    pkgs.sqruff
+    # vim-dadbodがMySQL/MariaDBへ接続するときに使うCLI。
+    pkgs.mariadb.client
+  ];
+
+  # `home-manager` コマンド自体もHome Manager管理下に置く。
+  programs.home-manager.enable = true;
+}

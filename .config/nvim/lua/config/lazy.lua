@@ -1,0 +1,650 @@
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
+  local lazyrepo = "https://github.com/folke/lazy.nvim.git"
+  local out = vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "--branch=stable",
+    lazyrepo,
+    lazypath,
+  })
+
+  if vim.v.shell_error ~= 0 then
+    vim.api.nvim_echo({
+      { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
+      { out, "WarningMsg" },
+      { "\nPress any key to exit..." },
+    }, true, {})
+    vim.fn.getchar()
+    os.exit(1)
+  end
+end
+
+vim.opt.rtp:prepend(lazypath)
+
+vim.g.mapleader = " "
+vim.g.maplocalleader = "\\"
+
+local function git_commit()
+  vim.cmd("tabnew")
+  vim.cmd("terminal git commit")
+  vim.cmd("startinsert")
+end
+
+vim.keymap.set("n", "<leader>gc", git_commit, { desc = "Git: commit" })
+
+local function fzf_lua_git_commits_opts()
+  return {
+    actions = {
+      ["enter"] = {
+        fn = function(selected, opts)
+          if not selected[1] then
+            return
+          end
+
+          local commit = selected[1]:match("[^ ]+")
+          if not commit then
+            return
+          end
+
+          local diff_opts = vim.deepcopy(opts.__call_opts or {})
+          diff_opts.ref = commit
+          diff_opts.ref1 = commit .. "~"
+          require("fzf-lua").git_diff(diff_opts)
+        end,
+        header = "git diff",
+      },
+    },
+  }
+end
+
+require("lazy").setup({
+  spec = {
+    {
+      "folke/snacks.nvim",
+      priority = 1000,
+      lazy = false,
+      opts = {
+        image = {
+          enabled = true,
+          -- SVG・ICOは標準の対象外だが、ImageMagickで変換して表示できる。
+          formats = {
+            "png", "jpg", "jpeg", "gif", "bmp", "webp", "tiff",
+            "heic", "avif", "mp4", "mov", "avi", "mkv", "webm",
+            "pdf", "icns", "svg", "ico",
+          },
+        },
+      },
+      config = function(_, opts)
+        require("snacks").setup(opts)
+
+        -- Oilの初回プレビューでも描画し、WezTermに前の画像を残さない。
+        local group = vim.api.nvim_create_augroup("ImagePreviewLifecycle", { clear = true })
+        local function redraw_image(buf)
+          Snacks.image.terminal.detect(function()
+            -- 端末検出中に別の画像へ移動した場合は描画しない。
+            if vim.api.nvim_buf_is_valid(buf) and #vim.fn.win_findbuf(buf) > 0 then
+              -- attachは既存の描画を消去して、新しい描画状態を作る。
+              Snacks.image.buf.attach(buf)
+              if vim.bo[buf].filetype == "image" then
+                -- 読み込み表示がバッファを書き換えても保存対象にしない。
+                vim.bo[buf].buftype = "nofile"
+                vim.bo[buf].modified = false
+              end
+            end
+          end)
+        end
+        vim.api.nvim_create_autocmd("BufWinLeave", {
+          group = group,
+          callback = function(event)
+            if vim.bo[event.buf].filetype == "image" then
+              Snacks.image.placement.clean(event.buf)
+              vim.bo[event.buf].modified = false
+            end
+          end,
+        })
+        vim.api.nvim_create_autocmd("BufWinEnter", {
+          group = group,
+          callback = function(event)
+            local buf = event.buf
+            local file = vim.api.nvim_buf_get_name(buf)
+            if not Snacks.image.supports_file(file) then
+              return
+            end
+            vim.schedule(function()
+              redraw_image(buf)
+            end)
+          end,
+        })
+        local resize_generation = 0
+        vim.api.nvim_create_autocmd("VimResized", {
+          group = group,
+          callback = function()
+            resize_generation = resize_generation + 1
+            local generation = resize_generation
+            -- 端末の再描画と連続リサイズが落ち着いてから画像を復元する。
+            vim.defer_fn(function()
+              if generation ~= resize_generation then
+                return
+              end
+              local seen = {}
+              for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+                local buf = vim.api.nvim_win_get_buf(win)
+                if not seen[buf] and vim.bo[buf].filetype == "image" then
+                  seen[buf] = true
+                  redraw_image(buf)
+                end
+              end
+            end, 100)
+          end,
+        })
+      end,
+    },
+    {
+      "neovim/nvim-lspconfig",
+      config = function()
+        -- LSPが有効になったバッファだけに、LSP用のキーマップを設定する。
+        vim.api.nvim_create_autocmd("LspAttach", {
+          group = vim.api.nvim_create_augroup("UserLspKeymaps", { clear = true }),
+          callback = function(event)
+            -- `buffer = event.buf` を指定して、LSPが付いていない通常バッファへ影響を広げない。
+            local function map(lhs, rhs, desc)
+              vim.keymap.set("n", lhs, rhs, { buffer = event.buf, desc = desc })
+            end
+
+            -- よく使うLSP操作をNeovim標準のLua APIに割り当てる。
+            map("gd", vim.lsp.buf.definition, "LSP: 定義へジャンプ")
+            map("gi", vim.lsp.buf.implementation, "LSP: 実装へジャンプ")
+            map("gr", vim.lsp.buf.references, "LSP: 参照を表示")
+            map("gy", vim.lsp.buf.type_definition, "LSP: 型定義へジャンプ")
+            map("K", vim.lsp.buf.hover, "LSP: ホバー情報を表示")
+            map("<leader>rn", vim.lsp.buf.rename, "LSP: 名前変更")
+            map("<leader>ca", vim.lsp.buf.code_action, "LSP: コードアクション")
+            map("<leader>f", function()
+              vim.lsp.buf.format({ bufnr = event.buf })
+            end, "LSP: フォーマット")
+            map("<leader>e", vim.diagnostic.open_float, "LSP: 現在行の診断を表示")
+            map("[d", vim.diagnostic.goto_prev, "LSP: 前の診断へ移動")
+            map("]d", vim.diagnostic.goto_next, "LSP: 次の診断へ移動")
+          end,
+        })
+
+        vim.lsp.config("phpactor", {
+          cmd = { "phpactor", "language-server" },
+          filetypes = { "php" },
+          root_markers = { ".git", "composer.json", ".phpactor.json", ".phpactor.yml" },
+          workspace_required = true,
+          init_options = {
+            ["language_server_phpstan.enabled"] = false,
+            ["language_server_psalm.enabled"] = false,
+          },
+        })
+
+        vim.lsp.config("sqruff", {
+          cmd = { "sqruff", "--dialect", "mysql", "lsp" },
+          filetypes = { "sql", "mysql" },
+          root_markers = { ".sqruff", ".git" },
+          workspace_required = false,
+        })
+
+        vim.lsp.enable("phpactor")
+        vim.lsp.enable("sqruff")
+      end,
+    },
+    {
+      "ricardoramirezr/blade-nav.nvim",
+      ft = { "blade", "php" },
+      opts = {
+        integrations = {
+          cmp = false,
+          coq = false,
+        },
+        annotations = {
+          create_keymaps = false,
+        },
+      },
+    },
+    {
+      "kristijanhusak/vim-dadbod-ui",
+      dependencies = {
+        { "tpope/vim-dadbod", lazy = true },
+        {
+          "kristijanhusak/vim-dadbod-completion",
+          ft = { "sql", "mysql", "plsql" },
+          lazy = true,
+        },
+      },
+      cmd = {
+        "DBUI",
+        "DBUIToggle",
+        "DBUIAddConnection",
+        "DBUIFindBuffer",
+      },
+      keys = {
+        { "<leader>db", "<cmd>DBUIToggle<cr>", desc = "Database: UI切替" },
+        { "<leader>da", "<cmd>DBUIAddConnection<cr>", desc = "Database: 接続を追加" },
+        { "<leader>df", "<cmd>DBUIFindBuffer<cr>", desc = "Database: 現在のバッファを表示" },
+      },
+    },
+    {
+      "mfussenegger/nvim-dap",
+      dependencies = {
+        { "mason-org/mason.nvim", opts = {} },
+        {
+          "jay-babu/mason-nvim-dap.nvim",
+          opts = {
+            ensure_installed = { "php" },
+            handlers = {},
+          },
+        },
+        {
+          "rcarriga/nvim-dap-ui",
+          dependencies = { "nvim-neotest/nvim-nio" },
+        },
+      },
+      config = function()
+        local dap = require("dap")
+        local dapui = require("dapui")
+
+        local function php_project_root()
+          local current_file = vim.api.nvim_buf_get_name(0)
+          local root = vim.fs.root(current_file ~= "" and current_file or 0, { ".git", "composer.json" })
+          return root or (vim.uv or vim.loop).cwd()
+        end
+
+        local function php_path_mappings()
+          local project_root = php_project_root()
+          local project_name = vim.fs.basename(project_root)
+          -- Keep machine-specific project names outside the symlinked nvim config.
+          local local_config = vim.fn.expand("~/.config/nvim-local/php-xdebug-remote-roots.json")
+          local remote_roots = {}
+          if vim.fn.filereadable(local_config) == 1 then
+            local ok, decoded = pcall(function()
+              return vim.json.decode(table.concat(vim.fn.readfile(local_config), "\n"))
+            end)
+            local valid = ok and type(decoded) == "table" and not vim.islist(decoded)
+            if valid then
+              for project, remote_path in pairs(decoded) do
+                if type(project) ~= "string" or type(remote_path) ~= "string" or remote_path:sub(1, 1) ~= "/" then
+                  valid = false
+                  break
+                end
+              end
+            end
+            if valid then
+              remote_roots = decoded
+            else
+              vim.notify("Invalid PHP Xdebug local mapping: " .. local_config, vim.log.levels.WARN)
+            end
+          end
+          local remote_root = vim.env.NVIM_PHP_XDEBUG_REMOTE_ROOT or remote_roots[project_name] or "/var/www/html"
+
+          return { [remote_root] = project_root }
+        end
+
+        dap.configurations.php = {
+          {
+            type = "php",
+            request = "launch",
+            name = "PHP: Listen for Xdebug (Docker)",
+            hostname = "0.0.0.0",
+            port = 9003,
+            pathMappings = php_path_mappings,
+          },
+        }
+
+        dapui.setup()
+
+        dap.listeners.before.attach.php_dapui = function()
+          dapui.open()
+        end
+        dap.listeners.before.launch.php_dapui = function()
+          dapui.open()
+        end
+        dap.listeners.before.event_terminated.php_dapui = function()
+          dapui.close()
+        end
+        dap.listeners.before.event_exited.php_dapui = function()
+          dapui.close()
+        end
+
+        vim.fn.sign_define("DapBreakpoint", { text = "●", texthl = "DiagnosticError" })
+        vim.fn.sign_define("DapBreakpointCondition", { text = "◆", texthl = "DiagnosticWarn" })
+        vim.fn.sign_define("DapStopped", { text = "▶", texthl = "DiagnosticInfo", linehl = "Visual" })
+      end,
+      keys = {
+        { "<F5>", function() require("dap").continue() end, desc = "Debug: 開始/続行" },
+        { "<F9>", function() require("dap").toggle_breakpoint() end, desc = "Debug: ブレークポイント切替" },
+        { "<F10>", function() require("dap").step_over() end, desc = "Debug: ステップオーバー" },
+        { "<F11>", function() require("dap").step_into() end, desc = "Debug: ステップイン" },
+        { "<F12>", function() require("dap").step_out() end, desc = "Debug: ステップアウト" },
+        { "<leader>xb", function() require("dap").toggle_breakpoint() end, desc = "Debug: ブレークポイント切替" },
+        { "<leader>xc", function() require("dap").continue() end, desc = "Debug: 開始/続行" },
+        { "<leader>xn", function() require("dap").step_over() end, desc = "Debug: ステップオーバー" },
+        { "<leader>xi", function() require("dap").step_into() end, desc = "Debug: ステップイン" },
+        { "<leader>xo", function() require("dap").step_out() end, desc = "Debug: ステップアウト" },
+        { "<leader>xt", function() require("dap").terminate() end, desc = "Debug: 終了" },
+        { "<leader>xu", function() require("dapui").toggle() end, desc = "Debug: UI切替" },
+        { "<leader>xe", function() require("dapui").eval() end, mode = { "n", "v" }, desc = "Debug: 式を評価" },
+      },
+    },
+    {
+      "saghen/blink.cmp",
+      version = "1.*",
+      ft = { "sql", "mysql", "plsql" },
+      opts = {
+        keymap = { preset = "default" },
+        completion = {
+          documentation = { auto_show = true },
+        },
+        sources = {
+          default = { "dadbod", "buffer" },
+          providers = {
+            dadbod = {
+              name = "Dadbod",
+              module = "vim_dadbod_completion.blink",
+            },
+          },
+        },
+      },
+    },
+    {
+      "lewis6991/gitsigns.nvim",
+      event = { "BufReadPre", "BufNewFile" },
+      opts = {
+        on_attach = function(bufnr)
+          local gitsigns = require("gitsigns")
+
+          local function map(lhs, rhs, desc)
+            vim.keymap.set("n", lhs, rhs, { buffer = bufnr, desc = desc })
+          end
+
+          map("]c", function()
+            if vim.wo.diff then
+              vim.cmd.normal({ "]c", bang = true })
+            else
+              gitsigns.nav_hunk("next")
+            end
+          end, "Git: 次の変更へ")
+
+          map("[c", function()
+            if vim.wo.diff then
+              vim.cmd.normal({ "[c", bang = true })
+            else
+              gitsigns.nav_hunk("prev")
+            end
+          end, "Git: 前の変更へ")
+
+          map("<leader>gp", gitsigns.preview_hunk, "Git: 変更をプレビュー")
+          map("<leader>gr", gitsigns.reset_hunk, "Git: hunkを戻す")
+        end,
+        current_line_blame = true,
+        current_line_blame_opts = {
+          virt_text = true,
+          virt_text_pos = "eol",
+          delay = 500,
+          ignore_whitespace = false,
+        },
+        current_line_blame_formatter = "<author>, <author_time:%R> - <summary>",
+      },
+    },
+    {
+      "folke/which-key.nvim",
+      event = "VeryLazy",
+      keys = {
+        {
+          "<leader>?",
+          function()
+            require("which-key").show({ global = false })
+          end,
+          desc = "WhichKey: バッファローカルキー表示",
+        },
+      },
+      opts = {
+        preset = "modern",
+        spec = {
+          { "<leader>d", group = "Database" },
+          { "<leader>g", group = "Git" },
+          { "<leader>m", group = "Markdown" },
+          { "<leader>p", group = "FzfLua" },
+          { "<leader>t", group = "Terminal" },
+          { "<leader>x", group = "Debug" },
+        },
+      },
+    },
+    {
+      "stevearc/oil.nvim",
+      ---@module "oil"
+      ---@type oil.SetupOpts
+      opts = {},
+      config = function(_, opts)
+        local oil = require("oil")
+        oil.setup(opts)
+
+	-- プレビュー表示
+        local group = vim.api.nvim_create_augroup("OilAutoPreview", { clear = true })
+        vim.api.nvim_create_autocmd("User", {
+          group = group,
+          pattern = "OilEnter",
+          callback = function(event)
+            local bufnr = event.data and event.data.buf
+            if not bufnr then
+              return
+            end
+
+            vim.schedule(function()
+              if not vim.api.nvim_buf_is_valid(bufnr) then
+                return
+              end
+
+              local oil_win
+              for _, winid in ipairs(vim.fn.win_findbuf(bufnr)) do
+                if vim.api.nvim_win_is_valid(winid) and not vim.w[winid].oil_preview then
+                  oil_win = winid
+                  break
+                end
+              end
+
+              if not oil_win then
+                return
+              end
+
+              local tabpage = vim.api.nvim_win_get_tabpage(oil_win)
+              for _, winid in ipairs(vim.api.nvim_tabpage_list_wins(tabpage)) do
+                if vim.w[winid].oil_preview then
+                  return
+                end
+              end
+
+              vim.api.nvim_win_call(oil_win, function()
+                oil.open_preview({
+                  vertical = true,
+                  split = "belowright",
+                })
+              end)
+            end)
+          end,
+        })
+      end,
+      dependencies = { { "nvim-mini/mini.icons", opts = {} } },
+      lazy = false,
+      keys = {
+        { "-", "<cmd>Oil<cr>", desc = "Open parent directory with preview" },
+      },
+    },
+    {
+      -- nvim内ターミナルの設定
+      "akinsho/toggleterm.nvim",
+      version = "*",
+      lazy = false,
+      keys = {
+        { "<leader>tt", "<cmd>ToggleTerm<cr>", desc = "Terminal: 開閉" },
+      },
+      opts = {
+        open_mapping = { [[<C-\>]], [[<C-¥>]] },
+        direction = "float",
+        float_opts = {
+          border = "curved",
+	  -- 横
+          width = function()
+            return math.floor(vim.o.columns * 0.8)
+          end,
+	  -- 縦
+          height = function()
+            return math.floor(vim.o.lines * 0.9)
+          end,
+        },
+        start_in_insert = true,
+        insert_mappings = true,
+        terminal_mappings = true,
+      },
+    },
+    {
+      "ibhagwan/fzf-lua",
+      cmd = "FzfLua",
+      keys = {
+        {
+          "<leader>pf",
+          function()
+            require("fzf-lua").files()
+          end,
+          desc = "FzfLua: ファイル検索",
+        },
+        {
+          "<leader>pg",
+          function()
+            require("fzf-lua").live_grep()
+          end,
+          desc = "FzfLua: grep検索",
+        },
+        {
+          "<leader>pb",
+          function()
+            require("fzf-lua").buffers()
+          end,
+          desc = "FzfLua: バッファ検索",
+        },
+        {
+          "<leader>pr",
+          function()
+            require("fzf-lua").oldfiles()
+          end,
+          desc = "FzfLua: 最近開いたファイル",
+        },
+        {
+          "<leader>gs",
+          function()
+            require("fzf-lua").git_status()
+          end,
+          desc = "Git: status",
+        },
+        {
+          "<leader>gh",
+          function()
+            require("fzf-lua").git_hunks()
+          end,
+          desc = "Git: hunks",
+        },
+        {
+          "<leader>gl",
+          function()
+            require("fzf-lua").git_commits(fzf_lua_git_commits_opts())
+          end,
+          desc = "Git: commit log",
+        },
+        {
+          "<leader>ph",
+          function()
+            require("fzf-lua").help_tags()
+          end,
+          desc = "FzfLua: ヘルプ検索",
+        },
+      },
+      opts = {},
+    },
+    {
+      "nvim-treesitter/nvim-treesitter",
+      lazy = false,
+      build = ":TSUpdate",
+      config = function()
+        local missing_parsers = {}
+
+        for _, parser in ipairs({ "markdown", "markdown_inline", "php", "blade", "vue", "html", "sql" }) do
+          if not vim.treesitter.language.add(parser) then
+            table.insert(missing_parsers, parser)
+          end
+        end
+
+        if #missing_parsers > 0 then
+          require("nvim-treesitter").install(missing_parsers):wait(300000)
+        end
+
+        vim.api.nvim_create_autocmd("FileType", {
+          group = vim.api.nvim_create_augroup("UserBladeTreesitterHighlight", { clear = true }),
+          pattern = { "blade" },
+          callback = function(event)
+            vim.treesitter.start(event.buf)
+          end,
+        })
+
+        vim.api.nvim_create_autocmd("FileType", {
+          group = vim.api.nvim_create_augroup("UserSqlTreesitterHighlight", { clear = true }),
+          pattern = { "sql", "mysql", "plsql" },
+          callback = function(event)
+            vim.treesitter.start(event.buf, "sql")
+          end,
+        })
+
+        local function apply_sql_highlights()
+          local highlights = {
+            ["@keyword.sql"] = { fg = "#fce094", bold = true },
+            ["@keyword.conditional.sql"] = { fg = "#fce094", bold = true },
+            ["@keyword.modifier.sql"] = { fg = "#fce094", bold = true },
+            ["@type.sql"] = { fg = "#8cf8f7" },
+            ["@function.call.sql"] = { fg = "#8cf8f7" },
+            ["@variable.member.sql"] = { fg = "#a6dbff" },
+            ["@string.sql"] = { fg = "#b3f6c0" },
+            ["@number.sql"] = { fg = "#ffc0b9" },
+            ["@number.float.sql"] = { fg = "#ffc0b9" },
+            ["@comment.sql"] = { fg = "#9b9ea4", italic = true },
+            ["@operator.sql"] = { fg = "#fce094" },
+          }
+
+          for group, options in pairs(highlights) do
+            vim.api.nvim_set_hl(0, group, options)
+          end
+        end
+
+        apply_sql_highlights()
+
+        vim.api.nvim_create_autocmd("ColorScheme", {
+          group = vim.api.nvim_create_augroup("UserSqlTreesitterColors", { clear = true }),
+          callback = apply_sql_highlights,
+        })
+      end,
+    },
+    {
+      "MeanderingProgrammer/render-markdown.nvim",
+      ft = { "markdown" },
+      dependencies = {
+        "nvim-treesitter/nvim-treesitter",
+        "nvim-mini/mini.icons",
+      },
+      keys = {
+        {
+          "<leader>mp",
+          "<cmd>RenderMarkdown toggle<cr>",
+          desc = "Markdown: プレビュー切替",
+          ft = "markdown",
+        },
+      },
+      opts = {},
+    },
+  },
+  install = { colorscheme = { "habamax" } },
+  checker = { enabled = true },
+  -- 現在のプラグインはLuaRocksを必要としないため、hererocksの導入と警告を無効化する。
+  rocks = { enabled = false },
+})
