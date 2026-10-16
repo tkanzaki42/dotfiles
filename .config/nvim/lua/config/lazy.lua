@@ -189,6 +189,31 @@ require("lazy").setup({
           workspace_required = false,
         })
 
+        vim.lsp.config("vtsls", {
+          on_init = function(client)
+            -- Oil は移動後に旧パスを検査するため、folder フィルターでは
+            -- 消えた旧ディレクトリが除外される。glob のみで通知を判定する。
+            local filters = vim.tbl_get(client.server_capabilities,
+              "workspace", "fileOperations", "didRename", "filters") or {}
+            for _, filter in ipairs(filters) do
+              if filter.pattern.matches == "folder" then
+                filter.pattern.matches = nil
+              end
+            end
+          end,
+          capabilities = {
+            workspace = {
+              fileOperations = { didRename = true, willRename = true },
+            },
+          },
+          settings = {
+            vtsls = { autoUseWorkspaceTsdk = true },
+            typescript = { updateImportsOnFileMove = { enabled = "always" } },
+            javascript = { updateImportsOnFileMove = { enabled = "always" } },
+          },
+        })
+
+        vim.lsp.enable("vtsls")
         vim.lsp.enable("phpactor")
         vim.lsp.enable("sqruff")
       end,

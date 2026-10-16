@@ -103,22 +103,24 @@ work  # 会社用レイアウト（左に会社用 Codex）
 Codex だけを起動するコマンドも用意する:
 
 ```sh
-codex-personal  # CODEX_HOME=~/.codex（既存の設定・認証を使用）
+codex-personal  # CODEX_HOME=~/.codex-personal（個人用）
 codex-work      # CODEX_HOME=~/.codex-work（会社用）
 ```
 
-通常の `codex` は引き続き既存の個人用環境として使う。
-シェルで `CODEX_HOME` を別の場所に設定している場合は解除するか、`codex-personal` を使う。
-既存の `~/.codex` が会社アカウントの場合は、`codex-personal login` で個人用にログインし直す。
+通常の `codex` は `CODEX_HOME`、未設定なら `~/.codex` を使うため、
+個人用の起動には `codex-personal` を使う。
+個人用は初回に `codex-personal login` を実行し、ブラウザで個人アカウントを選ぶ。
+従来の `~/.codex` の認証・設定・履歴は自動移行しない。
 会社用は初回に以下を実行し、ブラウザで会社アカウント・会社ワークスペースを選ぶ:
 
 ```sh
 codex-work login
 ```
 
-`codex-work` は初回起動時に `~/.codex-work` を作成し、認証情報を
-その中の `auth.json` に保存する。設定・履歴も個人用と分かれる。
-必要な会社用設定や MCP は `~/.codex-work/config.toml` などに別途設定する。
+各コマンドは初回起動時に専用ディレクトリを作成し、認証情報を
+その中の `auth.json` に保存する。設定・履歴も個人用と会社用で分かれる。
+必要な設定や MCP は `~/.codex-personal/config.toml` と
+`~/.codex-work/config.toml` などに別途設定する。
 認証ファイルや履歴は dotfiles にコピーせず、Git 管理に入れない。
 
 Home Manager 適用前にレイアウトを試す場合:
@@ -129,6 +131,10 @@ nix run .#weztermlayout -- personal
 ```
 
 `phpactor` は Neovim のPHP LSPとして使う。Neovimプラグイン自体は引き続き `lazy.nvim` で管理する。
+TypeScript/JavaScript（JSX・TSXを含む）のLSPには Home Manager 管理の `vtsls` を使う。
+プロジェクト内の TypeScript があれば優先し、なければ同梱版を使う。
+Oil でファイルやディレクトリを名前変更・移動すると import パスも自動更新する。
+更新されたコードは自動保存しないので、確認後に `:wa` などで保存する。
 画像プレビューには `snacks.nvim` の image 機能を使う。`nvim photo.png` や
 `:edit photo.jpg` で画像を開ける。SVG・ICOもプレビュー対象に含める。
 アニメーションGIFは先頭フレームを静止画として表示する。

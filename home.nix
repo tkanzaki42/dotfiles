@@ -33,6 +33,8 @@ in
     pkgs.php84Packages.composer
     # Neovimから使うPHP LSP本体。
     pkgs.phpactor
+    # TypeScript/JavaScript LSP。TypeScript本体も同梱する。
+    pkgs.vtsls
     # Masonで導入するPHP Debug Adapterの実行ランタイム。
     pkgs.nodejs_22
     # SQL formatter/linter。NeovimのLSPから `sqruff lsp` として使う。

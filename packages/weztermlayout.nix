@@ -9,9 +9,12 @@
 let
   codexPersonal = writeShellApplication {
     name = "codex-personal";
+    runtimeInputs = [ coreutils ];
     text = ''
-      export CODEX_HOME="$HOME/.codex"
-      exec codex "$@"
+      export CODEX_HOME="$HOME/.codex-personal"
+      umask 077
+      mkdir -p "$CODEX_HOME"
+      exec codex -c 'cli_auth_credentials_store="file"' "$@"
     '';
   };
   codexWork = writeShellApplication {
