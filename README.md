@@ -2,6 +2,12 @@
 
 ## Setup
 
+### リポジトリ専用スキル
+
+`.agents/skills/nvim-update-review/` に Neovim 更新確認用の Codex スキルを置く。
+このリポジトリで更新内容や更新を依頼すると、現在の設定への破壊的変更の影響も確認する。
+追加のインストールや symlink は不要。明示的には `$nvim-update-review` で呼び出せる。
+
 ### 初回セットアップ
 
 リポジトリを clone する:
@@ -183,6 +189,10 @@ phpactor --version
 
 ```text
 dotfiles/
+├── .agents/
+│   └── skills/
+│       └── nvim-update-review/
+│           └── SKILL.md
 ├── .gitignore
 ├── flake.nix
 ├── home.nix
