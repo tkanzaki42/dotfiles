@@ -1,7 +1,7 @@
 {
   "blade-nav.nvim": { "branch": "main", "commit": "909825e2cfa5171867f2109f7cedc5e3e5d60956" },
   "blink.cmp": { "branch": "main", "commit": "78336bc89ee5365633bcf754d93df01678b5c08f" },
-  "fzf-lua": { "branch": "main", "commit": "c67fadd9a24230417267e4f9068227e093c0be2b" },
+  "fzf-lua": { "branch": "main", "commit": "348df165f1773dd08c5d710add3fd0db6d421e6a" },
   "gitsigns.nvim": { "branch": "main", "commit": "fd780920613e541cbdfac41bf711583ed49f9249" },
   "lazy.nvim": { "branch": "main", "commit": "306a05526ada86a7b30af95c5cc81ffba93fef97" },
   "mason-nvim-dap.nvim": { "branch": "main", "commit": "9a10e096703966335bd5c46c8c875d5b0690dade" },
