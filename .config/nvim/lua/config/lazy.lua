@@ -379,6 +379,7 @@ require("lazy").setup({
       "lewis6991/gitsigns.nvim",
       event = { "BufReadPre", "BufNewFile" },
       opts = {
+        word_diff = true,
         on_attach = function(bufnr)
           local gitsigns = require("gitsigns")
 
@@ -402,6 +403,7 @@ require("lazy").setup({
             end
           end, "Git: 前の変更へ")
 
+          map("<leader>gd", gitsigns.diffthis, "Git: 左右分割で差分を表示")
           map("<leader>gp", gitsigns.preview_hunk, "Git: 変更をプレビュー")
           map("<leader>gr", gitsigns.reset_hunk, "Git: hunkを戻す")
         end,

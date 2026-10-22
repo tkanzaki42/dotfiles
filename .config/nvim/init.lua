@@ -12,6 +12,18 @@ vim.api.nvim_set_hl(0, "LineNr", { fg = "#7f849c" })
 -- 相対行表示
 vim.opt.relativenumber = true
 
+-- 差分表示中はセクション移動キーで差分を移動する
+for _, key in ipairs({ "]]", "][" }) do
+  vim.keymap.set("n", key, function()
+    return vim.wo.diff and "]c" or key
+  end, { expr = true, desc = "次の差分またはセクションへ" })
+end
+for _, key in ipairs({ "[[", "[]" }) do
+  vim.keymap.set("n", key, function()
+    return vim.wo.diff and "[c" or key
+  end, { expr = true, desc = "前の差分またはセクションへ" })
+end
+
 -- ヤンクをシステムクリップボードに共有
 vim.opt.clipboard = "unnamedplus"
 
